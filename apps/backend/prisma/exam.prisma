@@ -1,0 +1,23 @@
+model Exam {
+    id                   String    @id @default(uuid())
+    name                 String
+    defaultOrder         Int
+    timeOrder            Int
+    type                 ExamType
+    totalScore           Int
+    totalWeightedScore   Int
+    averageScore         Float
+    weightedAverageScore Float
+    classRanking         Int
+    streamRanking        Int
+    gradeRanking         Int
+    semesterId           String
+    semester             Semester  @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+    subjects             Subject[]
+}
+
+enum ExamType {
+    main
+    weekly
+    other
+}

@@ -1,0 +1,22 @@
+model Subject {
+    id             String      @id @default(uuid())
+    name           String
+    classRanking   Int
+    rankingCount   Int
+    classAverage   Float
+    type           SubjectType
+    credit         Int
+    score          String
+    isCreditGained Boolean     @default(true)
+    examId         String
+    exam           Exam        @relation(fields: [examId], references: [id])
+    sortOrder      Int
+}
+
+enum SubjectType {
+    nationalMandatory
+    schollMandatory
+    schoolElective
+    otherElective
+    unknown
+}

@@ -1,0 +1,92 @@
+model Student {
+    id                   String             @id
+    name                 String
+    password             Bytes
+    gender               Gender
+    birthDate            DateTime
+    enrollmentDate       DateTime
+    graduationDate       DateTime?
+    graduationSchool     String
+    status               EnrollmentStatus
+    credential           String
+    address              Address?
+    phoneNumber          Bytes
+    contactInfo          ContactInfo?
+    contactInfoId        String?
+    semesters            Semester[]
+    guardianId           String?
+    createAt             DateTime           @default(now())
+    updatedAt            DateTime           @default(now()) @updatedAt
+    classId              String             @unique
+    class                SchoolClass        @relation(fields: [classId], references: [id], onDelete: Cascade)
+    enabledNotifications NotificationType[] @default([])
+    isQuickAccessOpen    Boolean            @default(true)
+    disciplines          Disciplinary[]
+
+    @@map("Student")
+}
+
+enum Grade {
+    junior1
+    junior2
+    junior3
+    senior1
+    senior2
+    senior3
+}
+
+enum Gender {
+    male
+    female
+}
+
+enum EnrollmentStatus {
+    enrolled
+    suspended
+    graduated
+    withdraw
+}
+
+enum NotificationType {
+    scoreUpdate
+    schoolBusTableUpdate
+    scheduleUpdate
+    rewordsUpdate
+    classScheduleUpdate
+    profileUpdate
+}
+
+model Address {
+    id          String  @id @default(uuid())
+    household   Bytes
+    emergency   Bytes
+    phoneNumber Bytes
+    student     Student @relation(fields: [studentId], references: [id])
+    studentId   String  @unique
+}
+
+model Guardian {
+    id          String        @id @default(uuid())
+    name        Bytes
+    title       Bytes
+    phoneNumber Bytes
+    profession  Bytes
+    contactOf   ContactInfo[] @relation("Contact")
+    fatherOf    ContactInfo?  @relation("Father")
+    motherOf    ContactInfo?  @relation("Mother")
+    emergencyOf ContactInfo[] @relation("Emergency")
+}
+
+model ContactInfo {
+    id          String   @id @default(uuid())
+    fatherId    String   @unique
+    motherId    String   @unique
+    emergencyId String
+    contactId   String
+    father      Guardian @relation("Father", fields: [fatherId], references: [id])
+    mother      Guardian @relation("Mother", fields: [motherId], references: [id])
+    emergency   Guardian @relation("Emergency", fields: [emergencyId], references: [id])
+    contact     Guardian @relation("Contact", fields: [contactId], references: [id])
+    account     Student  @relation(fields: [accountId], references: [id])
+    accountId   String   @unique
+}
