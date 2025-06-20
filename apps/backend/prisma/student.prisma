@@ -12,9 +12,7 @@ model Student {
     address              Address?
     phoneNumber          Bytes
     contactInfo          ContactInfo?
-    contactInfoId        String?
     semesters            Semester[]
-    guardianId           String?
     createAt             DateTime           @default(now())
     updatedAt            DateTime           @default(now()) @updatedAt
     classId              String             @unique
@@ -87,6 +85,6 @@ model ContactInfo {
     mother      Guardian @relation("Mother", fields: [motherId], references: [id])
     emergency   Guardian @relation("Emergency", fields: [emergencyId], references: [id])
     contact     Guardian @relation("Contact", fields: [contactId], references: [id])
-    account     Student  @relation(fields: [accountId], references: [id])
-    accountId   String   @unique
+    student     Student  @relation(fields: [studentId], references: [id])
+    studentId   String   @unique
 }
