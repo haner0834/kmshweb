@@ -6,6 +6,8 @@ model Disciplinary {
     reason       String
     student      Student           @relation(fields: [studentId], references: [id])
     studentId    String            @unique
+    semester     Semester          @relation(fields: [semesterId], references: [id])
+    semesterId   String            @unique
 }
 
 enum DisciplinaryLevel {

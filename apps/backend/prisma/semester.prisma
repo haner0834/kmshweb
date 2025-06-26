@@ -1,11 +1,12 @@
 model Semester {
-    id        String   @id @default(uuid())
-    name      String
-    createAt  DateTime
-    sortOrder Int      @default(0)
-    studentId String
-    student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-    exams     Exam[]
+    id             String         @id @default(uuid())
+    name           String
+    createAt       DateTime
+    sortOrder      Int            @default(0)
+    studentId      String
+    student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    exams          Exam[]
+    disciplinaries Disciplinary[]
 
     @@map("Semester")
 }
