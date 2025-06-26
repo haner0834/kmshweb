@@ -1,0 +1,20 @@
+model Disciplinary {
+    id           String            @id @default(uuid())
+    incidentDate DateTime
+    approvalDate DateTime
+    type         DisciplinaryLevel
+    reason       String
+    student      Student           @relation(fields: [studentId], references: [id])
+    studentId    String            @unique
+    semester     Semester          @relation(fields: [semesterId], references: [id])
+    semesterId   String            @unique
+}
+
+enum DisciplinaryLevel {
+    commendation
+    minorMerit
+    majorMerit
+    warning
+    minorDemerit
+    majorDemerit
+}

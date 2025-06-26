@@ -1,0 +1,20 @@
+model SchoolClass {
+    id       String    @id @default(uuid())
+    grade    Grade
+    name     String
+    stream   Stream
+    number   Int
+    students Student[]
+    createAt DateTime  @default(now())
+    updateAt DateTime  @updatedAt
+
+    @@unique([grade, stream, name])
+    @@map("SchoolClass")
+}
+
+enum Stream {
+    science
+    social
+    all
+    other
+}
