@@ -1,11 +1,15 @@
 {
   "dependencies": {
-    "@prisma/client": "^6.10.1",
+    "@prisma/client": "^6.10.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "cors": "^2.8.5",
     "express": "^5.1.0"
   },
-  "devDependencies": {
-    "@types/express": "^5.0.3"
+  "prisma": {
+    "schema": "./prisma"
   },
   "scripts": {
     "start": "npx ts-node src/index.ts"
