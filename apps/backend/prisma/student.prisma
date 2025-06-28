@@ -8,7 +8,7 @@ model Student {
     graduationDate       DateTime?
     graduationSchool     String
     status               EnrollmentStatus
-    credential           String
+    credential           String // Serves its original purpose as "enrollment proof"
     address              Address?
     phoneNumber          Bytes
     contactInfo          ContactInfo?
@@ -20,6 +20,9 @@ model Student {
     enabledNotifications NotificationType[] @default([])
     isQuickAccessOpen    Boolean            @default(true)
     disciplines          Disciplinary[]
+    notifications        Notification[]
+    devices              Device[]
+    RefreshToken         RefreshToken[]
 
     @@map("Student")
 }
