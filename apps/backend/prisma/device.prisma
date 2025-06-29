@@ -1,0 +1,27 @@
+model Device {
+    id        String  @id @default(cuid())
+    studentId String
+    student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+    refreshTokenId String       @unique // Each device session is linked to one refresh token
+    refreshToken   RefreshToken @relation(fields: [refreshTokenId], references: [id], onDelete: Cascade)
+
+    type      DeviceType
+    pushToken String?    @unique // APNs or FCM token, can be null for web
+    isTrusted Boolean
+
+    lastLoginIp String
+    lastLoginAt DateTime
+    userAgent   String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    @@map("Device")
+}
+
+enum DeviceType {
+    ios
+    android
+    web
+}

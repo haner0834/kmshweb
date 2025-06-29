@@ -1,0 +1,15 @@
+model Notification {
+    id        String  @id @default(cuid())
+    studentId String
+    student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+    title  String
+    body   String
+    isRead Boolean @default(false)
+
+    payload Json?
+
+    createdAt DateTime @default(now())
+
+    @@map("Notification")
+}

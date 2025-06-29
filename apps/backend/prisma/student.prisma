@@ -2,23 +2,29 @@ model Student {
     id                   String             @id
     name                 String
     password             Bytes
+    encryptedUek         Bytes
     gender               Gender
     birthDate            DateTime
     enrollmentDate       DateTime
     graduationDate       DateTime?
     graduationSchool     String
     status               EnrollmentStatus
-    credential           String
-    address              Address?
+    credential           String // Serves its original purpose as "enrollment proof"
     phoneNumber          Bytes
-    contactInfo          ContactInfo?
-    semesters            Semester[]
     createAt             DateTime           @default(now())
     updatedAt            DateTime           @default(now()) @updatedAt
     classId              String             @unique
-    class                SchoolClass        @relation(fields: [classId], references: [id], onDelete: Cascade)
     enabledNotifications NotificationType[] @default([])
     isQuickAccessOpen    Boolean            @default(true)
+    tokensValidFrom      DateTime?
+    // Relations
+    address              Address?
+    contactInfo          ContactInfo?
+    semesters            Semester[]
+    class                SchoolClass        @relation(fields: [classId], references: [id], onDelete: Cascade)
+    notifications        Notification[]
+    devices              Device[]
+    refreshTokens        RefreshToken[]
     disciplines          Disciplinary[]
 
     @@map("Student")
@@ -55,7 +61,7 @@ enum NotificationType {
 }
 
 model Address {
-    id          String  @id @default(uuid())
+    id          String  @id @default(cuid())
     household   Bytes
     emergency   Bytes
     phoneNumber Bytes
@@ -64,7 +70,7 @@ model Address {
 }
 
 model Guardian {
-    id          String        @id @default(uuid())
+    id          String        @id @default(cuid())
     name        Bytes
     title       Bytes
     phoneNumber Bytes
@@ -76,7 +82,7 @@ model Guardian {
 }
 
 model ContactInfo {
-    id          String   @id @default(uuid())
+    id          String   @id @default(cuid())
     fatherId    String   @unique
     motherId    String   @unique
     emergencyId String
