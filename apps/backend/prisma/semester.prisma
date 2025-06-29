@@ -1,5 +1,5 @@
 model Semester {
-    id             String         @id @default(uuid())
+    id             String         @id @default(cuid())
     name           String
     createAt       DateTime
     sortOrder      Int            @default(0)

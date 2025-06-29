@@ -7,6 +7,8 @@ model Notification {
     body   String
     isRead Boolean @default(false)
 
+    payload Json?
+
     createdAt DateTime @default(now())
 
     @@map("Notification")

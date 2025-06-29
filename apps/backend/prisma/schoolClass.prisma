@@ -1,12 +1,12 @@
 model SchoolClass {
-    id       String    @id @default(uuid())
+    id       String    @id @default(cuid())
     grade    Grade
     name     String
     stream   Stream
     number   Int
     students Student[]
     createAt DateTime  @default(now())
-    updateAt DateTime  @updatedAt
+    updateAt DateTime  @default(now()) @updatedAt
 
     @@unique([grade, stream, name])
     @@map("SchoolClass")

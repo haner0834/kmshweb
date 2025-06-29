@@ -1,5 +1,5 @@
 model Subject {
-    id             String      @id @default(uuid())
+    id             String      @id @default(cuid())
     name           String
     classRanking   Int
     rankingCount   Int
