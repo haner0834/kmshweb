@@ -104,7 +104,7 @@ const getSubjectCredit = (replacedSubjectName: string): number => {
 
 const getSubjectType = (htmlString: string): SubjectType => {
     const trimmedHtmlString = htmlString.trim()
-    if (trimmedHtmlString === "部訂必修") return "nationalMandatory"
+    if (trimmedHtmlString === "部定必修") return "nationalMandatory"
     if (trimmedHtmlString === "校訂必修") return "schollMandatory"
     if (trimmedHtmlString === "選修-多元選修") return "schoolElective"
     if (trimmedHtmlString === "選修-其他") return "otherElective"
