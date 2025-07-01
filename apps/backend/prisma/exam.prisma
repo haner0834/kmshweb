@@ -4,13 +4,13 @@ model Exam {
     defaultOrder         Int
     timeOrder            Int
     type                 ExamType
-    totalScore           Int
-    totalWeightedScore   Int
-    averageScore         Float
-    weightedAverageScore Float
-    classRanking         Int
-    streamRanking        Int
-    gradeRanking         Int
+    totalScore           Int?
+    totalWeightedScore   Int?
+    averageScore         Float?
+    weightedAverageScore Float?
+    classRanking         Int?
+    streamRanking        Int?
+    gradeRanking         Int?
     semesterId           String
     semester             Semester  @relation(fields: [semesterId], references: [id], onDelete: Cascade)
     subjects             Subject[]
