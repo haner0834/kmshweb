@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { Request, Response } from 'express';
 import * as seniorSystem from './services/crawler.senior.service';
 import { SeniorLoginData } from './types/crawler.senior.types';
+import { parseProfile } from './services/parser.senior.service';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,8 +17,8 @@ app.use(cookieParser());
 
 app.use('/api/auth', authRouter);
 app.use("/abc/def", async (req: Request, res: Response) => {
-    const id = "310433"
-    const password = "R125460981"
+    const id = process.env.ID || "?"
+    const password = process.env.PASSWORD || "?"
 
     const credential: SeniorLoginData = { sid: id, password }
     const cookie = await seniorSystem.loginAndGetCookie(credential)
@@ -28,8 +29,7 @@ app.use("/abc/def", async (req: Request, res: Response) => {
     const profileContent = await seniorSystem.getStudentProfile(cookie)
     console.log(profileContent)
 
-    const examTable = await seniorSystem.getScoreTable(cookie)
-    console.log(examTable)
+    console.log("Parsed content:", parseProfile(profileContent))
 })
 
 app.listen(PORT, () => {
