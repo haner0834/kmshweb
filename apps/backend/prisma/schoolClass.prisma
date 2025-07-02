@@ -8,7 +8,7 @@ model SchoolClass {
     createAt DateTime  @default(now())
     updateAt DateTime  @default(now()) @updatedAt
 
-    @@unique([grade, stream, name])
+    @@unique([grade, stream, name], name: "unique_class_key")
     @@map("SchoolClass")
 }
 

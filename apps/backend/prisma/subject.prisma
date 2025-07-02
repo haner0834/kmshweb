@@ -1,9 +1,9 @@
 model Subject {
     id             String      @id @default(cuid())
     name           String
-    classRanking   Int
-    rankingCount   Int
-    classAverage   Float
+    classRanking   Int?
+    rankingCount   Int?
+    classAverage   Float?
     type           SubjectType
     credit         Int
     score          String

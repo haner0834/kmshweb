@@ -1,9 +1,12 @@
 import prisma from "../config/database"
-import { Student, Gender, EnrollmentStatus, Grade, Stream } from "@prisma/client"
+import redis from "../config/redis"
+import { Student, NotificationType } from "@prisma/client"
 import { generateTokens, verifyRefreshToken } from "./token.service"
 import { StudentPayload, Tokens, DeviceInfo } from "../types/auth.types"
 import * as cryptoUtil from "../utils/crypto.utils"
 import { notifyOtherTrustedDevices } from "./notification.service"
+import { loginStudentAccount, getStudentDataFromOldSite } from "./student.system.service"
+
 
 export class AuthError extends Error {
     constructor(message: string) {
@@ -22,46 +25,60 @@ export class AuthError extends Error {
  * @returns The created Student object (mocked, not yet saved to DB).
  * @throws {AuthError} If the account already exists.
  */
-export const register = async (id: string, password: string): Promise<Student> => {
-    const existingStudent = await prisma.student.findUnique({ where: { id } })
+export const register = async (sid: string, password: string): Promise<Student> => {
+    const existingStudent = await prisma.student.findUnique({ where: { id: sid } })
     if (existingStudent) {
         throw new AuthError("This accound has been registered")
     }
 
-    // TODO: Crawl from original site
+    loginStudentAccount(sid, password)
 
     // --- ENCRYPTION FLOW ---
     const uek = cryptoUtil.generateUek();
     const encryptedPassword = cryptoUtil.encryptWithUek(password, uek)
     const encryptedUek = cryptoUtil.encryptUek(uek)
 
-    // TODO: Replace this part with actual student data
-    const schoolClass = await prisma.schoolClass.create({
-        data: {
-            grade: Grade.senior1,
-            name: "平",
-            stream: Stream.all,
-            number: 10
+    const studentData = await getStudentDataFromOldSite(sid, password)
+
+    let relatedClass = await prisma.schoolClass.findUnique({
+        where: {
+            unique_class_key: {
+                stream: studentData.stream,
+                name: studentData.classLabel,
+                grade: studentData.grade,
+            }
         }
     })
 
-    // TODO: Create an student instance in db
+    if (!relatedClass) {
+        // The class hasn't been created, create it
+        const newClass = await prisma.schoolClass.create({
+            data: {
+                name: studentData.classLabel,
+                grade: studentData.grade,
+                stream: studentData.stream,
+                number: studentData.classNumber
+            }
+        })
+        relatedClass = newClass
+    }
+
     return await prisma.student.create({
         data: {
-            name: '',
-            id: id,
+            name: studentData.name,
+            id: studentData.sid,
             password: encryptedPassword,
             encryptedUek: encryptedUek,
-            gender: Gender.female,
-            birthDate: new Date(),
-            enrollmentDate: new Date(),
+            gender: studentData.gender,
+            birthDate: studentData.birthDate,
+            enrollmentDate: studentData.enrollmentDate,
             graduationDate: null,
-            graduationSchool: '',
-            status: EnrollmentStatus.enrolled,
-            credential: '',
+            graduationSchool: studentData.graduationSchool,
+            status: studentData.enrollmentStatus,
+            credential: studentData.credential,
             phoneNumber: Buffer.from(''),
-            classId: schoolClass.id,
-            enabledNotifications: [],
+            classId: relatedClass.id,
+            enabledNotifications: Object.values(NotificationType),
             isQuickAccessOpen: true,
             tokensValidFrom: null
         }
