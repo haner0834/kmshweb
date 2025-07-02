@@ -1,4 +1,6 @@
 import * as cheerio from "cheerio";
+import { StudentData } from "../../types/student.types";
+import { EnrollmentStatus, Gender, Grade, Stream } from "@prisma/client";
 
 /**
  * Extracts the Chinese part from a string by matching Unicode characters
@@ -146,3 +148,88 @@ export const parseProfile = (htmlString: string): Record<string, string> | null 
         return null;
     }
 };
+
+const getClassGrade = (name: string): Grade => {
+    if (name === "國一") return "junior1"
+    if (name === "國二") return "junior2"
+    if (name === "國三") return "junior3"
+
+    if (name === "高一") return "senior1"
+    if (name === "高二") return "senior2"
+    if (name === "高三") return "senior3"
+
+    return "junior1"
+}
+
+const getStream = (name: string): Stream => {
+    if (name === "全不分組") return "all"
+    // TODO: Check if the old sys are really using this
+    if (name === "自然組") return "science"
+    if (name === "社會組") return "social"
+    return "other"
+}
+
+const getClassNumber = (className: string): number => {
+    if (className === "忠") return 1
+    if (className === "") return 2
+    if (className === "") return 3
+    if (className === "") return 4
+    if (className === "") return 5
+    if (className === "") return 6
+    if (className === "") return 7
+    if (className === "禮") return 8
+    if (className === "") return 9
+    if (className === "平") return 10
+    if (className === "智") return 11
+    if (className === "信") return 12
+    return -1
+}
+
+const getGender = (str: string): Gender => {
+    if (str === "男" || str === "男生") return "male"
+    return "female"
+}
+
+const convertToDate = (rocDateStr: string): Date | null => {
+    // Extract numbers
+    const match = rocDateStr.match(/(\d+)年(\d+)月(\d+)日/)
+
+    if (match) {
+        const rocYear = parseInt(match[1], 10)
+        const month = parseInt(match[2], 10)
+        const day = parseInt(match[3], 10)
+
+        const gregorianYear = rocYear + 1911
+        const date = new Date(gregorianYear, month - 1, day) // Month is 0-based in JS
+
+        return date
+    } else {
+        console.error("Invalid date format")
+    }
+    return null
+}
+
+const getEnrollmentStatus = (str: string): EnrollmentStatus => {
+    if (str === "在學中") return "enrolled"
+    // TODO: Check the right relationship
+    if (str === "已畢業") return "graduated"
+    if (str === "休學") return "suspended"
+    return "withdraw"
+}
+
+export const convertToStudentData = (parsed: Record<string, string>): StudentData => {
+    return {
+        sid: parsed["sid"],
+        name: parsed["姓名"],
+        enrollmentStatus: getEnrollmentStatus(parsed["是否在學"]),
+        credential: parsed["入學轉入資格"],
+        birthDate: convertToDate(parsed["生日"]) ?? new Date(),
+        graduationSchool: parsed["原畢業學校"],
+        enrollmentDate: convertToDate(parsed["入學日期"]) ?? new Date(),
+        gender: getGender(parsed["性別"]),
+        stream: getStream(parsed["組別"]),
+        grade: getClassGrade(parsed["年級"]),
+        classLabel: parsed["班級"],
+        classNumber: getClassNumber(parsed["班級"])
+    }
+}
