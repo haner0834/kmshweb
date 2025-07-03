@@ -38,7 +38,9 @@ export const getStudentDataFromOldSite = async (sid: string, password: string): 
     if (sid.length === SENIOR_SID_LENGTH) {
         const redisKey = `session:senior:${sid}`
         let cookie = await redis.get(redisKey)
+
         if (!cookie) {
+            // Re-login to the original system and get the cookie
             const newCookie = await seniorSystem.loginAndGetCookie({ sid, password })
 
             await redis.set(redisKey, newCookie)

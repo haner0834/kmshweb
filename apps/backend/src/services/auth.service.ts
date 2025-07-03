@@ -5,7 +5,7 @@ import { generateTokens, verifyRefreshToken } from "./token.service"
 import { StudentPayload, Tokens, DeviceInfo } from "../types/auth.types"
 import * as cryptoUtil from "../utils/crypto.utils"
 import { notifyOtherTrustedDevices } from "./notification.service"
-import { loginStudentAccount, getStudentDataFromOldSite } from "./student.system.service"
+import { loginStudentAccount, getStudentDataFromOldSite } from "./student.service"
 
 
 export class AuthError extends Error {
