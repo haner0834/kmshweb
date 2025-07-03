@@ -12,12 +12,11 @@ import { AuthRequest } from "../types/auth.types";
  * @param res - Express response object used to send the response.
  * @returns A Promise that resolves to void.
  */
-export const getStudentProfileHandler = async (req: Request, res: Response): Promise<void> => {
-    const { sid } = req.query;
-
-    if (typeof sid !== 'string' || !sid) {
-        res.status(400).json({ message: "Student ID (sid) is required and must be a string." });
-        return;
+export const getStudentProfileHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const sid = req.student?.id
+    if (!sid) {
+        res.status(400).json({ message: "Authentication error: Student ID is missing from the request payload." })
+        return
     }
 
     try {
