@@ -1,249 +1,160 @@
 import { Request, Response } from "express";
-import prisma from "../config/database";
 import * as studentService from "../services/student.service"
-import { StudentData } from "../types/student.types";
-import { decryptUek, decryptWithUek } from "../utils/crypto.utils";
 import { AuthRequest } from "../types/auth.types";
-import { Prisma } from "@prisma/client";
-
-// MARK: Student Profile
 
 /**
- * Get student profile from DB.
- * @param req Express Request object, expects `sid` in the query.
- * @param res Express Response object.
- * @returns void
+ * Handles the HTTP request to retrieve a student's profile by their student ID (sid).
+ *
+ * Expects a query parameter `sid` of type string. Responds with the student's profile data if found,
+ * or an appropriate error message and status code if not found or if an error occurs.
+ *
+ * @param req - Express request object, expects `sid` in the query parameters.
+ * @param res - Express response object used to send the response.
+ * @returns A Promise that resolves to void.
  */
-export const getStudentProfileHandler = async (req: Request, res: Response) => {
-    // Get student data from DB, instead of require it from old site.
-    const sid = req.query.sid as string
+export const getStudentProfileHandler = async (req: Request, res: Response): Promise<void> => {
+    const { sid } = req.query;
 
-    if (!sid) {
-        res.status(400).json("SID is required.")
-        return
+    if (typeof sid !== 'string' || !sid) {
+        res.status(400).json({ message: "Student ID (sid) is required and must be a string." });
+        return;
     }
 
-    const student = await prisma.student.findUnique({
-        where: { id: sid },
-        include: {
-            class: true
+    try {
+        const studentData = await studentService.getStudentProfileFromDb(sid);
+
+        if (!studentData) {
+            res.status(404).json({ message: `Student with ID ${sid} not found.` });
+            return;
         }
-    })
-
-    if (!student) {
-        res.status(404).json({ message: "Couldn't find student." })
-        return
+        res.status(200).json(studentData);
+    } catch (error) {
+        console.error("Error getting student profile:", error);
+        res.status(500).json({ message: "An unexpected error occurred while fetching student profile." });
     }
-
-    const studentData: StudentData = {
-        sid: student.id,
-        name: student.name,
-        enrollmentStatus: student.status,
-        credential: student.credential,
-        birthDate: student.birthDate,
-        graduationSchool: student.graduationSchool,
-        enrollmentDate: student.enrollmentDate,
-        gender: student.gender,
-        stream: student.class.stream,
-        grade: student.class.grade,
-        classLabel: student.class.name,
-        classNumber: student.class.number
-    }
-
-    res.status(200).json(studentData)
-}
+};
 
 /**
- * Get student profile from old site and update.
- * @param req Express Request object, expects `sid` in the query.
- * @param res Express Response object.
- * @returns void
+ * Handles the request to retrieve and update a student's profile from the old site.
+ *
+ * This controller expects the authenticated student's ID to be present in the request payload.
+ * It attempts to update the student's profile by calling the student service, and returns the updated
+ * student data in the response. Handles authentication errors and unexpected failures gracefully.
+ *
+ * @param req - The authenticated request object containing the student information.
+ * @param res - The response object used to send back the result or error message.
+ * @returns A promise that resolves when the response has been sent.
  */
 export const getStudentProfileAndUpdateHandler = async (req: AuthRequest, res: Response): Promise<void> => {
-    const sid = req.student?.id
+    const sid = req.student?.id;
+
     if (!sid) {
-        res.status(400).json({ message: "SID is reuquired." })
-        return
+        res.status(401).json({ message: "Authentication error: Student ID is missing from the request payload." });
+        return;
     }
 
-    const secureData = await prisma.student.findUnique({
-        where: { id: sid },
-        select: {
-            password: true,
-            encryptedUek: true
+    try {
+        const studentData = await studentService.updateStudentProfileFromOldSite(sid);
+        res.status(200).json(studentData);
+    } catch (error) {
+        console.error("Error updating student profile from old site:", error);
+        if (error instanceof Error) {
+            res.status(500).json({ message: `Failed to update student profile: ${error.message}` });
+        } else {
+            res.status(500).json({ message: "An unexpected error occurred while updating student profile." });
         }
-    })
-
-    if (!secureData) {
-        res.status(404).json({ message: "Student doesn't exist." })
-        return
     }
-
-    const uek = decryptUek(Buffer.from(secureData.encryptedUek))
-    if (!uek) {
-        res.status(500).json({ message: "Failed to decrypt UEK." })
-        return
-    }
-    const plaintextPassword = decryptWithUek(Buffer.from(secureData.password), uek)
-    if (!plaintextPassword) {
-        res.status(500).json({ message: "Failed to decrypt password." })
-        return
-    }
-
-    const studentData = await studentService.getStudentDataFromOldSite(sid, plaintextPassword!)
-
-    await prisma.$transaction(async (tx) => {
-        const existingClass = await tx.schoolClass.upsert({
-            where: {
-                unique_class_key: {
-                    grade: studentData.grade,
-                    stream: studentData.stream,
-                    name: studentData.classLabel
-                }
-            },
-            update: {},
-            create: {
-                name: studentData.classLabel,
-                stream: studentData.stream,
-                grade: studentData.grade,
-                number: studentData.classNumber
-            }
-        })
-
-        // Update student data
-        await tx.student.update({
-            where: { id: sid },
-            data: {
-                name: studentData.name,
-                birthDate: studentData.birthDate,
-                status: studentData.enrollmentStatus,
-                credential: studentData.credential,
-                graduationSchool: studentData.graduationSchool,
-                enrollmentDate: studentData.enrollmentDate,
-                gender: studentData.gender,
-                classId: existingClass.id
-            }
-        })
-    })
-
-    res.status(200).json(studentData)
-}
+};
 
 // MARK: Scores
 
+export const getSemestersHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const includeExams = req.query.includeExams === "true";
+    const includeSubjects = req.query.includeSubjects === "true";
+    const studentId = req.student?.id;
+
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." });
+        return;
+    }
+
+    try {
+        const semesters = await studentService.getStudentSemesters(studentId, includeExams, includeSubjects);
+        res.status(200).json(semesters);
+    } catch (error) {
+        console.error("Error getting semesters:", error);
+        res.status(500).json({ message: "An unexpected error occurred while fetching semesters." });
+    }
+};
+
+export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const includeExams = req.query.includeExams === "true";
+    const includeSubjects = req.query.includeSubjects === "true";
+    const studentId = req.student?.id;
+
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." });
+        return;
+    }
+
+    try {
+        const currentSemester = await studentService.getCurrentStudentSemester(
+            studentId,
+            includeExams,
+            includeSubjects
+        );
+
+        if (!currentSemester) {
+            res.status(404).json({ message: `No semesters found for student ID ${studentId}.` });
+            return;
+        }
+        res.status(200).json(currentSemester);
+    } catch (error) {
+        console.error("Error getting current semester:", error);
+        res.status(500).json({ message: "An unexpected error occurred while fetching the current semester." });
+    }
+};
+
 /**
- * Get all semester of the student.
- * @param req Express Request object, expects `includeExams`, `includeSubjects` in the query.
- * @param res Express Response object.
- * @returns void
+ * Handles the request to retrieve an exam by its name for the currently authenticated student in the current semester.
+ *
+ * @param req - The authenticated request object containing the student's information and query parameters.
+ * @param res - The response object used to send the HTTP response.
+ * @returns A promise that resolves to void. Sends a JSON response with the exam data if found, or an appropriate error message and status code otherwise.
+ *
+ * @remarks
+ * - Requires the `examName` query parameter to be provided as a string.
+ * - Requires the student to be authenticated (student ID must be present in the request).
+ * - Responds with:
+ *   - 200 and the exam data if found.
+ *   - 400 if the exam name is missing or invalid.
+ *   - 401 if the student is not authenticated.
+ *   - 404 if the exam is not found in the current semester.
+ *   - 500 for unexpected server errors.
  */
-export const getSemestersHandler = async (req: AuthRequest, res: Response) => {
-    const includeExams = req.query.includeExams === "true"
-    const includeSubjects = req.query.includeSubjects === "true"
+export const getExamByNameInCurrentSemesterHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const examName = req.query.examName;
+    const studentId = req.student?.id;
 
-    const studentPayload = req.student
-    if (!studentPayload) {
-        res.sendStatus(400)
-        return
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." });
+        return;
+    }
+    if (typeof examName !== 'string' || !examName) {
+        res.status(400).json({ message: "Exam name (examName) is required and must be a string." });
+        return;
     }
 
-    const include: Prisma.SemesterInclude = {}
+    try {
+        const foundExam = await studentService.getExamByNameInCurrentSemester(studentId, examName);
 
-    if (includeExams) {
-        include.exams = {
-            orderBy: { defaultOrder: "asc" },
+        if (!foundExam) {
+            res.status(404).json({ message: `Exam with name '${examName}' not found in the current semester.` });
+            return;
         }
-
-        if (includeSubjects) {
-            include.exams.include = {
-                subjects: {
-                    orderBy: { sortOrder: "asc" },
-                },
-            }
-        }
+        res.status(200).json(foundExam);
+    } catch (error) {
+        console.error("Error getting exam by name in current semester:", error);
+        res.status(500).json({ message: "An unexpected error occurred while fetching the exam." });
     }
-
-    const semesters = await prisma.semester.findMany({
-        where: { studentId: studentPayload.id },
-        orderBy: { sortOrder: "asc" },
-        include,
-    })
-
-    res.json(semesters)
-}
-
-export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response) => {
-    const includeExams = req.query.includeExams === "true"
-    const includeSubjects = req.query.includeSubjects === "true"
-
-    const studentPayload = req.student
-    if (!studentPayload) {
-        res.sendStatus(400).json({ message: "Missing student payload." })
-        return
-    }
-
-    const include: any = {}
-
-    if (includeExams) {
-        include.exams = {
-            orderBy: { defaultOrder: "asc" },
-        }
-
-        if (includeSubjects) {
-            include.exams.include = {
-                subjects: {
-                    orderBy: { sortOrder: "asc" },
-                },
-            }
-        }
-    }
-
-    const semesters = await prisma.semester.findMany({
-        where: { studentId: studentPayload.id },
-        orderBy: { sortOrder: "asc" },
-        include,
-    })
-
-    // Semesters are sorted by the sort order, which increase every insert
-    res.json(semesters.length > 0 ? semesters[semesters.length - 1] : {})
-}
-
-export const getExamByNameInCurrentSemesterHandler = async (req: AuthRequest, res: Response) => {
-    const examName = req.query.examName
-
-    const studentPayload = req.student
-    if (!studentPayload) {
-        res.status(400).json({ message: "Missing student payload." })
-        return
-    }
-
-    const semesters = await prisma.semester.findMany({
-        where: { studentId: studentPayload.id },
-        orderBy: { sortOrder: "asc" },
-        include: {
-            exams: {
-                orderBy: { defaultOrder: "asc" },
-                include: {
-                    subjects: {
-                        orderBy: { sortOrder: "asc" }
-                    }
-                }
-            }
-        }
-    })
-
-    if (!semesters) {
-        res.status(404).json({ message: "Couldn't find current semester." })
-        return
-    }
-
-    const currentSemester = semesters[semesters.length - 1]
-    const foundExam = currentSemester.exams.find(exam => exam.name === examName)
-
-    if (!foundExam) {
-        res.status(404).json({ message: `Exam with name (${examName}) doesn't exist in current semester.` })
-        return
-    }
-
-    res.status(200).json(foundExam)
-}
+};
