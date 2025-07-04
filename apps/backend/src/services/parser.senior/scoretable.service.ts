@@ -133,8 +133,10 @@ export const getSemesterName = (htmlContent: string): string => {
 };
 
 export const extractRocYear = (semesterName: string): number => {
-    // 113學年度第1學期 -> first 3 charters
-    const rocYear = Number(semesterName.slice(0, 3))
+    // 一一三學年度第一學期 -> first 3 charters
+    // and then mapping them
+    const chineseToNumberMap: Record<string, number> = { '零': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+    const rocYear = Number(semesterName.slice(0, 3).split('').map(c => chineseToNumberMap[c]).join(''))
     return rocYear
 }
 

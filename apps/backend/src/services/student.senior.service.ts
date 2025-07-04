@@ -20,14 +20,8 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
 
     // From DB
     let currentSemester = await getCurrentStudentSemesterFromDb(sid)
-    if (!currentSemester) {
-
-    }
-    if (!(currentSemester as any).exams) {
-
-    }
-
     const semesterName = getSemesterName(scoreTable)
+
     if (!currentSemester || semesterName !== (currentSemester?.name ?? "")) {
         const newSemester = await prisma.semester.create({
             data: {
@@ -50,17 +44,20 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
         currentSemester = newSemester
     }
 
+    if (!currentSemester.exams) {
+        return
+    }
+
     // Now, create/update it
     await prisma.$transaction(async (tx) => {
         for (const [exam, subjects] of scoresMap) {
             exam.semesterId = currentSemester.id
             const { id, ...examToUpdate } = exam
-            const exams: Exam[] = (currentSemester as any).exams
-            let foundExam = exams.find(e => e.name === exam.name)
+            let foundExam = currentSemester.exams.find(e => e.name === exam.name)
             let createdExam: typeof exam & { subjects: Subject[] }
             if (foundExam) {
                 // update existing exam
-                const { id, ...e } = foundExam
+                const { id, subjects, ...e } = foundExam
                 createdExam = await tx.exam.update({
                     where: { id: foundExam.id },
                     data: e,
@@ -92,12 +89,17 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
                 }
             }
 
-            await tx.subject.createMany({
-                data: subjectsToCreate
-            })
-            await tx.subject.updateMany({
-                data: subjectsToUpdate
-            })
+            if (!subjectsToCreate) {
+                await tx.subject.createMany({
+                    data: subjectsToCreate
+                })
+            }
+
+            if (!subjectsToUpdate) {
+                await tx.subject.updateMany({
+                    data: subjectsToUpdate
+                })
+            }
         }
     })
 }

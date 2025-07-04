@@ -251,7 +251,10 @@ export const getCurrentStudentSemesterFromDb = async (
         },
     });
     // if (!latestSemester) throw new Error("No semester existing.")
-    if (!latestSemester) return null
+    if (!latestSemester) {
+        console.log("No semester.")
+        return null
+    }
 
     // Now, check if the semester is currently available
     // first, check if the < current_ad_year - (roc_year + term) > is 1910
@@ -259,6 +262,7 @@ export const getCurrentStudentSemesterFromDb = async (
     const term = extractSemesterTerm(latestSemester.name)
     const termNumber = term === "first" ? 1 : 2
     const currentAdYear = new Date().getFullYear()
+    console.log("roc:", rocYear, "term:", term, "current:", currentAdYear, "sum:", rocYear + termNumber)
 
     if (rocYear + termNumber + 1910 === currentAdYear) {
         return latestSemester
@@ -318,7 +322,7 @@ export const updateScoreData = async (studentId: string) => {
 
     const studentLevel = getStudentLevel(studentId.length)
     if (studentLevel === "senior") {
-        fetchScoreDataFromOldSeniorSite(studentId, password)
+        await fetchScoreDataFromOldSeniorSite(studentId, password)
         return
     } else if (studentLevel === "junior") {
         throw new Error("Function not implemented.")
