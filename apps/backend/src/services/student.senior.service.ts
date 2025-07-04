@@ -22,7 +22,7 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
     let currentSemester = await getCurrentStudentSemesterFromDb(sid)
     const semesterName = getSemesterName(scoreTable)
 
-    if (!currentSemester || semesterName !== (currentSemester?.name ?? "")) {
+    if (!currentSemester || semesterName !== currentSemester?.name) {
         const newSemester = await prisma.semester.create({
             data: {
                 name: semesterName,
