@@ -97,7 +97,7 @@ export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response)
     }
 
     try {
-        const currentSemester = await studentService.getCurrentStudentSemester(
+        const currentSemester = await studentService.getCurrentStudentSemesterFromDb(
             studentId,
             includeExams,
             includeSubjects
@@ -157,3 +157,43 @@ export const getExamByNameInCurrentSemesterHandler = async (req: AuthRequest, re
         res.status(500).json({ message: "An unexpected error occurred while fetching the exam." });
     }
 };
+
+/**
+ * Handles the request to retrieve and update the current semester for a student.
+ *
+ * This controller expects the authenticated student's ID to be available on the request object.
+ * It supports optional query parameters to include exams and subjects in the response.
+ * 
+ * Note: This operation will be slow for senior students, because it fetch data fromthe old website.
+ *
+ * Query Parameters:
+ * - includeExams: (string) If "true", includes exam information in the response.
+ * - includeSubjects: (string) If "true", includes subject information in the response.
+ *
+ * Responses:
+ * - 200: Returns the current semester data (optionally including exams and subjects).
+ * - 401: If the student ID is missing from the request (authentication error).
+ * - 500: If an unexpected error occurs while fetching or updating the current semester.
+ *
+ * @param req - The authenticated request object, containing the student information and query parameters.
+ * @param res - The response object used to send the HTTP response.
+ * @returns A Promise that resolves when the response is sent.
+ */
+export const getCurrentSemesterAndUpdateHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const includeExams = req.query.includeExams === "true";
+    const includeSubjects = req.query.includeSubjects === "true";
+    const sid = req.student?.id
+
+    if (!sid) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." })
+        return
+    }
+
+    try {
+        const semester = await studentService.getCurrentSemesterAndUpdate(sid, includeExams, includeSubjects)
+        res.status(200).json(semester)
+    } catch (error) {
+        console.error("Error getting/updating current semester:", error);
+        res.status(500).json({ message: "An unexpected error occurred while fetching the current semester." });
+    }
+}

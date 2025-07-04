@@ -1,10 +1,13 @@
 import * as seniorSystem from "./crawler.senior.service";
 import { parseProfile, convertToStudentData } from "./parser.senior/profile.service";
 import redis from "../config/redis";
-import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData } from "../types/student.types";
+import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData, getStudentLevel } from "../types/student.types";
 import { decryptUek, decryptWithUek } from "../utils/crypto.utils";
 import prisma from "../config/database";
-import { Prisma } from "@prisma/client";
+import { Prisma, Semester } from "@prisma/client";
+import { extractRocYear, extractSemesterTerm } from "./parser.senior/scoretable.service";
+import { error } from "console";
+import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
 
 // MARK: Shared
 /**
@@ -225,17 +228,45 @@ export const getStudentSemesters = async (
  * @param includeSubjects Whether to include subjects within exams.
  * @returns The current semester or null if none found.
  */
-export const getCurrentStudentSemester = async (
+export const getCurrentStudentSemesterFromDb = async (
     studentId: string,
     includeExams: boolean,
     includeSubjects: boolean
-) => {
+): Promise<Semester | null> => {
+    // year        terms
+    // 2025 -> [113-2, 114-1]
+    // 113 + 2 = 114 + 1 = 115 -> 2025 - 115 = 1910 -> in general, < current_year - (roc_year + term) > will be 1910
+    // The problem is that <ROC_YEAR>-1 will take jan and a lit feb of the next year
+    // for ex, 113-1, which starts from 2024/9, will continue to 2025/1
     const includeOptions = buildSemesterIncludeOptions(includeExams, includeSubjects);
-    return prisma.semester.findFirst({
+    // sort order: increase every insert (autoincrement())
+    const latestSemester = await prisma.semester.findFirst({
         where: { studentId: studentId },
         orderBy: { sortOrder: "desc" },
         include: includeOptions,
     });
+    // if (!latestSemester) throw new Error("No semester existing.")
+    if (!latestSemester) return null
+
+    // Now, check if the semester is currently available
+    // first, check if the < current_ad_year - (roc_year + term) > is 1910
+    const rocYear = extractRocYear(latestSemester.name)
+    const term = extractSemesterTerm(latestSemester.name)
+    const termNumber = term === "first" ? 1 : 2
+    const currentAdYear = new Date().getFullYear()
+
+    if (rocYear + termNumber + 1910 === currentAdYear) {
+        return latestSemester
+    } else {
+        // Second, check if current month is jan and < current_year - (roc_year + term) > is 1911
+        const currentMonth = new Date().getMonth()
+        if (rocYear + termNumber + 1911 === currentAdYear && currentMonth + 1 === 1) { // month is zero-based counting
+            return latestSemester
+        }
+    }
+
+    // throw new Error("No semester available.")
+    return null
 };
 
 /**
@@ -262,3 +293,39 @@ export const getExamByNameInCurrentSemester = async (
 
     return currentSemester?.exams[0] || null;
 };
+
+export const updateScoreData = async (studentId: string) => {
+    const secureData = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: {
+            password: true,
+            encryptedUek: true
+        }
+    })
+    if (!secureData) { throw new Error("Couldn't find student.") }
+
+    const uek = decryptUek(Buffer.from(secureData.encryptedUek))
+    if (!uek) { throw new Error("Failed to decrypt User Encryption Key (UEK).") }
+
+    const password = decryptWithUek(Buffer.from(secureData.password), uek)
+    if (!password) { throw new Error("Failed to decrypt password.") }
+
+
+    const studentLevel = getStudentLevel(studentId.length)
+    if (studentLevel === "senior") {
+        fetchScoreDataFromOldSeniorSite(studentId, password)
+    } else if (studentLevel === "junior") {
+        throw new Error("Function not implemented.")
+    }
+
+    throw new Error("Unknown student ID format.")
+}
+
+export const getCurrentSemesterAndUpdate = async (
+    studentId: string,
+    includeExams: boolean,
+    includeSubjects: boolean
+) => {
+    await updateScoreData(studentId)
+    return await getCurrentStudentSemesterFromDb(studentId, includeExams, includeSubjects)
+}

@@ -1,4 +1,4 @@
-import { Exam, Subject, ExamType, SubjectType } from "@prisma/client";
+import { Exam, Subject, ExamType, SubjectType, SemesterTerm } from "@prisma/client";
 import * as cheerio from "cheerio";
 
 // Helper interface for tracking column indices for each exam header.
@@ -131,6 +131,18 @@ export const getSemesterName = (htmlContent: string): string => {
 
     return semesterCell.text().trim();
 };
+
+export const extractRocYear = (semesterName: string): number => {
+    // 113學年度第1學期 -> first 3 charters
+    const rocYear = Number(semesterName.slice(0, 3))
+    return rocYear
+}
+
+export const extractSemesterTerm = (semesterName: string): SemesterTerm => {
+    if (semesterName.includes("第一學期")) return "first"
+    if (semesterName.includes("第二學期")) return "second"
+    throw new Error("Unknown semester term")
+}
 
 /**
  * Parses the main score table from HTML into a map of exams to their subjects.
