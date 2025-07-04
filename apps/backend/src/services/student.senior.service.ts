@@ -1,17 +1,17 @@
 import { extractSemesterTerm, getSemesterName, parseScoresTable } from "./parser.senior/scoretable.service"
-import { getScoreTable, loginAndGetCookie } from "./crawler.senior.service"
+import { getScoreTable, initializeSession, loginAndGetCookie } from "./crawler.senior.service"
 import prisma from "../config/database"
 import { getLoginCookie } from "../utils/redis.utils"
-import { getStudentLevel } from "../types/student.types"
 import { Subject, Exam } from "@prisma/client"
 import { getCurrentStudentSemesterFromDb } from "./student.service"
 
 export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: string) => {
     // Get login session cookie
-    let cookie = await getLoginCookie(sid, getStudentLevel(sid.length))
+    let cookie = await getLoginCookie(sid)
     if (!cookie) {
         // Re-login to the old site
         const newCookie = await loginAndGetCookie({ sid, password })
+        await initializeSession(newCookie)
         cookie = newCookie
     }
 
@@ -19,16 +19,16 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
     const scoresMap = parseScoresTable(scoreTable)
 
     // From DB
-    let currentSemester = await getCurrentStudentSemesterFromDb(sid, true, true)
+    let currentSemester = await getCurrentStudentSemesterFromDb(sid)
     if (!currentSemester) {
-        throw new Error("No current semester.")
+
     }
     if (!(currentSemester as any).exams) {
-        throw new Error("No exams found.")
+
     }
 
     const semesterName = getSemesterName(scoreTable)
-    if (semesterName !== currentSemester.name) {
+    if (!currentSemester || semesterName !== (currentSemester?.name ?? "")) {
         const newSemester = await prisma.semester.create({
             data: {
                 name: semesterName,
@@ -36,7 +36,14 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
                 studentId: sid
             },
             include: {
-                exams: true
+                exams: {
+                    orderBy: { defaultOrder: "asc" },
+                    include: {
+                        subjects: {
+                            orderBy: { sortOrder: "asc" }
+                        }
+                    }
+                }
             }
         })
 

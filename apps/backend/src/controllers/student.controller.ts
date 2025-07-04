@@ -87,8 +87,6 @@ export const getSemestersHandler = async (req: AuthRequest, res: Response): Prom
 };
 
 export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response): Promise<void> => {
-    const includeExams = req.query.includeExams === "true";
-    const includeSubjects = req.query.includeSubjects === "true";
     const studentId = req.student?.id;
 
     if (!studentId) {
@@ -97,11 +95,7 @@ export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response)
     }
 
     try {
-        const currentSemester = await studentService.getCurrentStudentSemesterFromDb(
-            studentId,
-            includeExams,
-            includeSubjects
-        );
+        const currentSemester = await studentService.getCurrentStudentSemesterFromDb(studentId);
 
         if (!currentSemester) {
             res.status(404).json({ message: `No semesters found for student ID ${studentId}.` });
@@ -166,10 +160,6 @@ export const getExamByNameInCurrentSemesterHandler = async (req: AuthRequest, re
  * 
  * Note: This operation will be slow for senior students, because it fetch data fromthe old website.
  *
- * Query Parameters:
- * - includeExams: (string) If "true", includes exam information in the response.
- * - includeSubjects: (string) If "true", includes subject information in the response.
- *
  * Responses:
  * - 200: Returns the current semester data (optionally including exams and subjects).
  * - 401: If the student ID is missing from the request (authentication error).
@@ -180,8 +170,6 @@ export const getExamByNameInCurrentSemesterHandler = async (req: AuthRequest, re
  * @returns A Promise that resolves when the response is sent.
  */
 export const getCurrentSemesterAndUpdateHandler = async (req: AuthRequest, res: Response): Promise<void> => {
-    const includeExams = req.query.includeExams === "true";
-    const includeSubjects = req.query.includeSubjects === "true";
     const sid = req.student?.id
 
     if (!sid) {
@@ -190,7 +178,7 @@ export const getCurrentSemesterAndUpdateHandler = async (req: AuthRequest, res: 
     }
 
     try {
-        const semester = await studentService.getCurrentSemesterAndUpdate(sid, includeExams, includeSubjects)
+        const semester = await studentService.getCurrentSemesterAndUpdate(sid)
         res.status(200).json(semester)
     } catch (error) {
         console.error("Error getting/updating current semester:", error);

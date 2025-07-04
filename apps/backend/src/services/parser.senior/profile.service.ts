@@ -67,7 +67,6 @@ export const parseProfile = (htmlString: string): Record<string, string> | null 
                 if (secondRowCells.length > 1) {
                     const gradeClass = cleanTextFromElement(secondRowCells[1]);
                     if (gradeClass) {
-                        console.log(gradeClass);
                         studentInfo['年級'] = gradeClass.substring(0, 2);
                         studentInfo['班級'] = gradeClass.substring(2, 3);
                         dataFoundInSummary = true;

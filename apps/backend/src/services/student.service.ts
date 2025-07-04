@@ -8,6 +8,7 @@ import { Prisma, Semester } from "@prisma/client";
 import { extractRocYear, extractSemesterTerm } from "./parser.senior/scoretable.service";
 import { error } from "console";
 import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
+import { getLoginCookie, setLoginCookie } from "../utils/redis.utils";
 
 // MARK: Shared
 /**
@@ -25,8 +26,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
             const cookie = await seniorSystem.loginAndGetCookie({ sid, password })
             seniorSystem.initializeSession(cookie)
 
-            await redis.set(redisKey, cookie, "EX", 15 * 60)
-
+            await setLoginCookie(cookie, sid)
         } else if (sid.length === JUNIOR_SID_LENGTH) {
             // Login junior system
         } else {
@@ -43,11 +43,12 @@ export const loginStudentAccount = async (sid: string, password: string) => {
 export const getStudentDataFromOldSite = async (sid: string, password: string): Promise<StudentData> => {
     if (sid.length === SENIOR_SID_LENGTH) {
         const redisKey = `session:senior:${sid}`
-        let cookie = await redis.get(redisKey)
+        let cookie = await getLoginCookie(sid)
 
         if (!cookie) {
             // Re-login to the original system and get the cookie
             const newCookie = await seniorSystem.loginAndGetCookie({ sid, password })
+            await seniorSystem.initializeSession(newCookie)
 
             await redis.set(redisKey, newCookie)
 
@@ -224,26 +225,30 @@ export const getStudentSemesters = async (
 /**
  * Retrieves the current (latest) semester for a given student.
  * @param studentId The ID of the student.
- * @param includeExams Whether to include exams.
- * @param includeSubjects Whether to include subjects within exams.
  * @returns The current semester or null if none found.
  */
 export const getCurrentStudentSemesterFromDb = async (
-    studentId: string,
-    includeExams: boolean,
-    includeSubjects: boolean
-): Promise<Semester | null> => {
+    studentId: string
+) => {
     // year        terms
     // 2025 -> [113-2, 114-1]
     // 113 + 2 = 114 + 1 = 115 -> 2025 - 115 = 1910 -> in general, < current_year - (roc_year + term) > will be 1910
     // The problem is that <ROC_YEAR>-1 will take jan and a lit feb of the next year
     // for ex, 113-1, which starts from 2024/9, will continue to 2025/1
-    const includeOptions = buildSemesterIncludeOptions(includeExams, includeSubjects);
     // sort order: increase every insert (autoincrement())
     const latestSemester = await prisma.semester.findFirst({
         where: { studentId: studentId },
         orderBy: { sortOrder: "desc" },
-        include: includeOptions,
+        include: {
+            exams: {
+                orderBy: { defaultOrder: "asc" },
+                include: {
+                    subjects: {
+                        orderBy: { sortOrder: "asc" }
+                    }
+                }
+            }
+        },
     });
     // if (!latestSemester) throw new Error("No semester existing.")
     if (!latestSemester) return null
@@ -314,6 +319,7 @@ export const updateScoreData = async (studentId: string) => {
     const studentLevel = getStudentLevel(studentId.length)
     if (studentLevel === "senior") {
         fetchScoreDataFromOldSeniorSite(studentId, password)
+        return
     } else if (studentLevel === "junior") {
         throw new Error("Function not implemented.")
     }
@@ -322,10 +328,9 @@ export const updateScoreData = async (studentId: string) => {
 }
 
 export const getCurrentSemesterAndUpdate = async (
-    studentId: string,
-    includeExams: boolean,
-    includeSubjects: boolean
+    studentId: string
 ) => {
     await updateScoreData(studentId)
-    return await getCurrentStudentSemesterFromDb(studentId, includeExams, includeSubjects)
+    const semester = await getCurrentStudentSemesterFromDb(studentId)
+    return semester
 }

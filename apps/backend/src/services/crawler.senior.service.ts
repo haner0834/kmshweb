@@ -108,7 +108,7 @@ export async function initializeSession(cookieString: string): Promise<void> {
  * @param cookieString The cookie string obtained from `loginAndGetCookie` or read from Redis
  * @returns Response HTML content
  */
-const performFncRequest = async (type: FncTypeKey, cookieString: string): Promise<string> => {
+export const performFncRequest = async (type: FncTypeKey, cookieString: string): Promise<string> => {
     const payload = new URLSearchParams({
         fncid: FncType[type].id,
         std_id: "",
@@ -120,7 +120,8 @@ const performFncRequest = async (type: FncTypeKey, cookieString: string): Promis
         const response = await axios.post<string>(URLCollection.Senior.fnc, payload, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Cookie': cookieString
+                'Cookie': cookieString,
+                'Referer': URLCollection.Senior.f_left
             }
         })
 
@@ -141,5 +142,6 @@ export const getStudentProfile = async (cookieString: string): Promise<string> =
 }
 
 export const getScoreTable = async (cookieString: string): Promise<string> => {
-    return performFncRequest("scoreTable", cookieString)
+    const html = await performFncRequest("scoreTable", cookieString)
+    return html
 }
