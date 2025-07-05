@@ -10,7 +10,6 @@ model Student {
     graduationSchool     String
     status               EnrollmentStatus
     credential           String // Serves its original purpose as "enrollment proof"
-    phoneNumber          Bytes
     createAt             DateTime           @default(now())
     updatedAt            DateTime           @default(now()) @updatedAt
     classId              String
@@ -18,8 +17,6 @@ model Student {
     isQuickAccessOpen    Boolean            @default(true)
     tokensValidFrom      DateTime?
     // Relations
-    address              Address?
-    contactInfo          ContactInfo?
     semesters            Semester[]
     class                SchoolClass        @relation(fields: [classId], references: [id], onDelete: Cascade)
     notifications        Notification[]
@@ -58,39 +55,4 @@ enum NotificationType {
     rewordsUpdate
     classScheduleUpdate
     profileUpdate
-}
-
-model Address {
-    id          String  @id @default(cuid())
-    household   Bytes
-    emergency   Bytes
-    phoneNumber Bytes
-    student     Student @relation(fields: [studentId], references: [id])
-    studentId   String  @unique
-}
-
-model Guardian {
-    id          String        @id @default(cuid())
-    name        Bytes
-    title       Bytes
-    phoneNumber Bytes
-    profession  Bytes
-    contactOf   ContactInfo[] @relation("Contact")
-    fatherOf    ContactInfo?  @relation("Father")
-    motherOf    ContactInfo?  @relation("Mother")
-    emergencyOf ContactInfo[] @relation("Emergency")
-}
-
-model ContactInfo {
-    id          String   @id @default(cuid())
-    fatherId    String   @unique
-    motherId    String   @unique
-    emergencyId String
-    contactId   String
-    father      Guardian @relation("Father", fields: [fatherId], references: [id])
-    mother      Guardian @relation("Mother", fields: [motherId], references: [id])
-    emergency   Guardian @relation("Emergency", fields: [emergencyId], references: [id])
-    contact     Guardian @relation("Contact", fields: [contactId], references: [id])
-    student     Student  @relation(fields: [studentId], references: [id])
-    studentId   String   @unique
 }
