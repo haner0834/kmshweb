@@ -200,7 +200,9 @@ export const login = async (
         })
     })
 
-    await notifyOtherTrustedDevices(student.id, newDevice)
+    if (trustDevice) {
+        await notifyOtherTrustedDevices(student.id, newDevice)
+    }
 
     return tokens
 }
