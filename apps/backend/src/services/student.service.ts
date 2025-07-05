@@ -9,6 +9,7 @@ import { extractRocYear, extractSemesterTerm } from "./parser.senior/scoretable.
 import { error } from "console";
 import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
 import { getLoginCookie, setLoginCookie } from "../utils/redis.utils";
+import { SemesterWithDetails } from "../types/crawler.senior.types";
 
 // MARK: Shared
 /**
@@ -302,7 +303,7 @@ export const getExamByNameInCurrentSemester = async (
     return currentSemester?.exams[0] || null;
 };
 
-export const updateScoreData = async (studentId: string) => {
+export const getCurrentSemesterAndUpdate = async (studentId: string): Promise<SemesterWithDetails | null> => {
     const secureData = await prisma.student.findUnique({
         where: { id: studentId },
         select: {
@@ -321,19 +322,10 @@ export const updateScoreData = async (studentId: string) => {
 
     const studentLevel = getStudentLevel(studentId.length)
     if (studentLevel === "senior") {
-        await fetchScoreDataFromOldSeniorSite(studentId, password)
-        return
+        return await fetchScoreDataFromOldSeniorSite(studentId, password)
     } else if (studentLevel === "junior") {
         throw new Error("Function not implemented.")
     }
 
     throw new Error("Unknown student ID format.")
-}
-
-export const getCurrentSemesterAndUpdate = async (
-    studentId: string
-) => {
-    await updateScoreData(studentId)
-    const semester = await getCurrentStudentSemesterFromDb(studentId)
-    return semester
 }

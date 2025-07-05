@@ -2,10 +2,11 @@ import { extractSemesterTerm, getSemesterName, parseScoresTable } from "./parser
 import { getScoreTable, initializeSession, loginAndGetCookie } from "./crawler.senior.service"
 import prisma from "../config/database"
 import { getLoginCookie } from "../utils/redis.utils"
-import { Subject, Exam } from "@prisma/client"
+import { Subject, Exam, Prisma } from "@prisma/client"
 import { getCurrentStudentSemesterFromDb } from "./student.service"
+import { SemesterWithDetails } from "../types/crawler.senior.types"
 
-export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: string) => {
+export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: string): Promise<SemesterWithDetails | null> => {
     // Get login session cookie
     let cookie = await getLoginCookie(sid)
     if (!cookie) {
@@ -16,14 +17,22 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
     }
 
     const scoreTable = await getScoreTable(cookie)
-    const scoresMap = parseScoresTable(scoreTable)
-
-    // From DB
-    let currentSemester = await getCurrentStudentSemesterFromDb(sid)
+    const scoresMap = parseScoresTable(scoreTable) // The id of both subjects and exams are empty, so avoid using it while creating/updating.
     const semesterName = getSemesterName(scoreTable)
 
-    if (!currentSemester || semesterName !== currentSemester?.name) {
-        const newSemester = await prisma.semester.create({
+    // Get current semester from DB or create a new one
+    let currentSemester = await prisma.semester.findFirst({
+        where: { studentId: sid, name: semesterName },
+        include: {
+            exams: {
+                orderBy: { defaultOrder: "asc" },
+                include: { subjects: { orderBy: { sortOrder: "asc" } } }
+            }
+        }
+    })
+
+    if (!currentSemester) {
+        currentSemester = await prisma.semester.create({
             data: {
                 name: semesterName,
                 term: extractSemesterTerm(semesterName),
@@ -40,66 +49,78 @@ export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: str
                 }
             }
         })
-
-        currentSemester = newSemester
     }
 
-    if (!currentSemester.exams) {
-        return
-    }
-
-    // Now, create/update it
+    // Now, create or update exams and subjects within a transaction
     await prisma.$transaction(async (tx) => {
-        for (const [exam, subjects] of scoresMap) {
-            exam.semesterId = currentSemester.id
-            const { id, ...examToUpdate } = exam
-            let foundExam = currentSemester.exams.find(e => e.name === exam.name)
-            let createdExam: typeof exam & { subjects: Subject[] }
-            if (foundExam) {
-                // update existing exam
-                const { id, subjects, ...e } = foundExam
-                createdExam = await tx.exam.update({
-                    where: { id: foundExam.id },
-                    data: e,
-                    include: {
-                        subjects: true
-                    }
+        for (const [examData, subjectsData] of scoresMap.entries()) {
+            let existingExam = currentSemester.exams.find(e => e.name === examData.name)
+            let upsertedExam: Exam & { subjects: Subject[] }
+
+            if (existingExam) {
+                // Update existing exam
+                const { id, semesterId, subjects, ...dataToUpdate } = existingExam
+                upsertedExam = await tx.exam.update({
+                    where: { id: existingExam.id },
+                    data: { ...dataToUpdate },
+                    include: { subjects: true }
                 })
             } else {
-                createdExam = await prisma.exam.create({
-                    data: examToUpdate,
-                    include: {
-                        subjects: true
-                    }
+                // Create new exam
+                const { id, ...examWithoutId } = examData
+                upsertedExam = await tx.exam.create({
+                    data: {
+                        ...examWithoutId,
+                        semesterId: currentSemester.id
+                    },
+                    include: { subjects: true }
                 })
             }
 
-            // use created exam's id for subjects
-            const subjectsWithoutId = subjects.map(({ id, ...rest }) => rest)
-            subjectsWithoutId.forEach((subject) => { subject.examId = createdExam.id })
+            // Prepare subjects for bulk creation or update
+            const subjectsToCreate: Prisma.SubjectCreateManyInput[] = []
+            const subjectsToUpdate: Promise<any>[] = []
 
-            let subjectsToCreate = [] as Omit<Subject, "id">[]
-            let subjectsToUpdate = [] as Omit<Subject, "id">[]
-
-            for (const s of subjectsWithoutId) {
-                if (createdExam.subjects.some(createdSubject => createdSubject.name === s.name)) {
-                    subjectsToUpdate.push(s)
+            for (const subject of subjectsData) {
+                const existingSubject = upsertedExam.subjects.find(s => s.name === subject.name)
+                const { id, ...subjectWithoutId } = subject
+                if (existingSubject) {
+                    // Add update operation to a promise array
+                    subjectsToUpdate.push(
+                        tx.subject.update({
+                            where: { id: existingSubject.id },
+                            data: { ...subjectWithoutId, examId: upsertedExam.id }
+                        })
+                    )
                 } else {
-                    subjectsToCreate.push(s)
+                    // Add new subject to the create list
+                    subjectsToCreate.push({ ...subjectWithoutId, examId: upsertedExam.id })
                 }
             }
 
-            if (!subjectsToCreate) {
+            // Execute batch operations
+            if (subjectsToCreate.length > 0) {
                 await tx.subject.createMany({
-                    data: subjectsToCreate
+                    data: subjectsToCreate,
                 })
             }
 
-            if (!subjectsToUpdate) {
-                await tx.subject.updateMany({
-                    data: subjectsToUpdate
-                })
+            if (subjectsToUpdate.length > 0) {
+                await Promise.all(subjectsToUpdate)
             }
         }
     })
+
+    // Refetch the semester with all updated data to ensure the returned value is fresh
+    const updatedSemester = await prisma.semester.findUnique({
+        where: { id: currentSemester.id },
+        include: {
+            exams: {
+                orderBy: { defaultOrder: "asc" },
+                include: { subjects: { orderBy: { sortOrder: "asc" } } }
+            }
+        }
+    })
+
+    return updatedSemester
 }
