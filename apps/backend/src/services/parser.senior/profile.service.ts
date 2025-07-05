@@ -170,14 +170,14 @@ const getStream = (name: string): Stream => {
 
 const getClassNumber = (className: string): number => {
     if (className === "忠") return 1
-    if (className === "") return 2
-    if (className === "") return 3
-    if (className === "") return 4
-    if (className === "") return 5
-    if (className === "") return 6
-    if (className === "") return 7
+    if (className === "孝") return 2
+    if (className === "愛") return 3
+    if (className === "真") return 4
+    if (className === "善") return 5
+    if (className === "仁") return 6
+    if (className === "義") return 7
     if (className === "禮") return 8
-    if (className === "") return 9
+    if (className === "和") return 9
     if (className === "平") return 10
     if (className === "智") return 11
     if (className === "信") return 12
