@@ -3,6 +3,8 @@ model Device {
     studentId String
     student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
+    clientSideDeviceId String
+
     refreshTokenId String       @unique // Each device session is linked to one refresh token
     refreshToken   RefreshToken @relation(fields: [refreshTokenId], references: [id], onDelete: Cascade)
 
@@ -17,6 +19,7 @@ model Device {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
+    @@unique(name: "unique_device_key", [clientSideDeviceId, studentId])
     @@map("Device")
 }
 

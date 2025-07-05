@@ -90,7 +90,7 @@ export const register = async (sid: string, password: string): Promise<Student> 
  * @param id Student ID.
  * @param password Plain text password.
  * @param trustDevice Whether to trust this device.
- * @param deviceInfo Device information.
+ * @param deviceInfo Device information. Conatins `clientSideDeviceId`, `type` and `pushToken` if using app client.
  * @param ipAddress IP address of the client.
  * @param userAgent User agent string.
  * @returns JWT access and refresh tokens.
@@ -134,6 +134,32 @@ export const login = async (
     const expiresAt = new Date(verifiedToken.exp * 1000)
 
     const newDevice = await prisma.$transaction(async (tx) => {
+        // Find if a device record already exists for this client-side ID.
+        const existingDevice = await tx.device.findUnique({
+            where: {
+                unique_device_key: {
+                    studentId: student.id,
+                    clientSideDeviceId: deviceInfo.clientSideDeviceId
+                }
+            },
+            select: { refreshTokenId: true }
+        })
+
+        // If a device existed, delete its old, now-stale refresh token.
+        if (existingDevice) {
+            try {
+                // This makes the previous session's refresh token invalid.
+                await tx.refreshToken.delete({
+                    where: { id: existingDevice.refreshTokenId },
+                });
+            } catch (error) {
+                // This catch block handles the rare edge case where the token might have
+                // been deleted by another process (e.g., logout) between the find and delete operations.
+                // It's safe to ignore this error and proceed.
+                console.warn(`Could not find old refresh token ${existingDevice.refreshTokenId} to delete. It might have been deleted already.`);
+            }
+        }
+
         const newRefreshToken = await tx.refreshToken.create({
             data: {
                 studentId: student.id,
@@ -143,21 +169,40 @@ export const login = async (
             }
         })
 
-        return tx.device.create({
-            data: {
-                studentId: student.id,
+        const deviceData = {
+            studentId: student.id,
+            clientSideDeviceId: deviceInfo.clientSideDeviceId,
+            refreshTokenId: newRefreshToken.id, // Link to the new session's refresh token
+            isTrusted: trustDevice,
+            type: deviceInfo.type,
+            pushToken: deviceInfo.pushToken,
+            lastLoginIp: ipAddress,
+            lastLoginAt: new Date(),
+            userAgent: userAgent,
+        };
+
+        return await tx.device.upsert({
+            where: {
+                unique_device_key: {
+                    studentId: student.id,
+                    clientSideDeviceId: deviceInfo.clientSideDeviceId
+                }
+            },
+            update: {
                 refreshTokenId: newRefreshToken.id,
                 isTrusted: trustDevice,
-                type: deviceInfo.type,
                 pushToken: deviceInfo.pushToken,
                 lastLoginIp: ipAddress,
                 lastLoginAt: new Date(),
-                userAgent: userAgent,
+                userAgent: userAgent
             },
+            create: deviceData
         })
     })
 
-    await notifyOtherTrustedDevices(student.id, newDevice)
+    if (trustDevice) {
+        await notifyOtherTrustedDevices(student.id, newDevice)
+    }
 
     return tokens
 }

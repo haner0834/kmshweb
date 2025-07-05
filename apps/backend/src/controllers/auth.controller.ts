@@ -56,7 +56,7 @@ export const loginHandler = async (req: Request, res: Response): Promise<void> =
         return
     }
 
-    if (!deviceInfo || !Object.values(DeviceType).includes(deviceInfo.type)) {
+    if (!deviceInfo || !deviceInfo.clientSideDeviceId || !Object.values(DeviceType).includes(deviceInfo.type)) {
         res.status(400).json({ message: "Valid equipment information must be provided." })
         return
     }
