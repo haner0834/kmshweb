@@ -13,7 +13,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     const authHeader = req.headers.authorization
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        res.status(401).json({ message: "Unauthorized: Missing token。" })
+        res.status(401).json({ message: "Unauthorized: Missing token." })
         return
     }
 
@@ -21,7 +21,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     const decodedPayload = jwt.decode(token)
 
     if (!decodedPayload || typeof decodedPayload !== "object" || !decodedPayload.sub) {
-        res.status(401).json({ message: "Unauthorized: Missing token。" })
+        res.status(401).json({ message: "Unauthorized: Missing token." })
         return
     }
 

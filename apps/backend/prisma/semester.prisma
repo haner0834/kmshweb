@@ -1,13 +1,19 @@
 model Semester {
     id             String         @id @default(cuid())
     name           String
-    createAt       DateTime
-    sortOrder      Int            @default(0)
+    createAt       DateTime       @default(now())
+    sortOrder      Int            @default(autoincrement())
     studentId      String
     student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
     exams          Exam[]
     disciplinaries Disciplinary[]
     classOfficer   String?
+    term           SemesterTerm
 
     @@map("Semester")
+}
+
+enum SemesterTerm {
+    first
+    second
 }
