@@ -17,6 +17,7 @@ export interface Tokens {
 }
 
 export interface DeviceInfo {
+    clientSideDeviceId: string
     type: DeviceType
     pushToken?: string // For mobile apps
 }
