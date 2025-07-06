@@ -86,6 +86,36 @@ export const getSemestersHandler = async (req: AuthRequest, res: Response): Prom
     }
 };
 
+export const getSemesterByIdHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const semesterId = req.params.id
+    if (!semesterId) {
+        res.status(400).json({ message: "Bad request: Missing semester id." })
+        return
+    }
+
+    const studentId = req.student?.id
+
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." })
+        return
+    }
+
+    try {
+        const semester = studentService.getSemesterById(studentId, semesterId)
+        if (!semester) {
+            res.status(404).json({ message: "No semester found with given id." })
+        }
+
+
+    } catch (error: any) {
+        if (error.message === "No permission") {
+            res.status(403).json({ message: "Forbidden: You don't have access to this semester." })
+        } else {
+            res.status(500).json({ message: "Internal server error" })
+        }
+    }
+}
+
 export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response): Promise<void> => {
     const studentId = req.student?.id;
 

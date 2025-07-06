@@ -329,3 +329,23 @@ export const getCurrentSemesterAndUpdate = async (studentId: string): Promise<Se
 
     throw new Error("Unknown student ID format.")
 }
+
+export const getSemesterById = async (studentId: string, id: string): Promise<Semester | null> => {
+    const semester = await prisma.semester.findUnique({
+        where: { id },
+        include: {
+            exams: {
+                orderBy: { defaultOrder: "asc" },
+                include: {
+                    subjects: { orderBy: { sortOrder: "asc" } }
+                }
+            }
+        }
+    })
+
+    if (semester?.studentId !== studentId) {
+        throw new Error("No permission")
+    }
+
+    return semester
+}
