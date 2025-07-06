@@ -87,7 +87,7 @@ export const getSemestersHandler = async (req: AuthRequest, res: Response): Prom
 };
 
 export const getSemesterByIdHandler = async (req: AuthRequest, res: Response): Promise<void> => {
-    const semesterId = req.query.id as string
+    const semesterId = req.params.id
     if (!semesterId) {
         res.status(400).json({ message: "Bad request: Missing semester id." })
         return
