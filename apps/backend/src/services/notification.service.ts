@@ -40,7 +40,8 @@ const createInAppNotification = async (
         data: {
             studentId,
             title,
-            body
+            body,
+            payload
         }
     })
 }
