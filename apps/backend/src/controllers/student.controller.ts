@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import * as studentService from "../services/student.service"
 import { AuthRequest } from "../types/auth.types";
+import { getNotificationCount, getNotificationsWithPagination } from "../services/notification.service";
+import { is } from "cheerio/dist/commonjs/api/traversing";
 
 /**
  * Handles the HTTP request to retrieve a student's profile by their student ID (sid).
@@ -213,5 +215,50 @@ export const getCurrentSemesterAndUpdateHandler = async (req: AuthRequest, res: 
     } catch (error) {
         console.error("Error getting/updating current semester:", error);
         res.status(500).json({ message: "An unexpected error occurred while fetching the current semester." });
+    }
+}
+
+export const getNotificationCountHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const studentId = req.student?.id
+
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." })
+        return
+    }
+
+    const role = req.query.role
+    let isRead: boolean | null = null
+    if (role === "read") isRead = true
+    if (role === "unread") isRead = false
+
+    try {
+        const count = await getNotificationCount(studentId, isRead)
+        res.status(200).json({ data: count })
+    } catch (error) {
+        console.error("Error getting notifications count:", error)
+        res.status(500).json({ message: "An unexpected error occurred while getting notifications count." })
+    }
+}
+
+export const getNotificationsWithPaginationHandler = async (req: AuthRequest, res: Response) => {
+    const studentId = req.student?.id
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." })
+        return
+    }
+
+    const page = Number(req.query.page)
+    const pageSize = Number(req.query.pagesize)
+    if (!page || !pageSize) {
+        res.status(400).json({ message: "Page and page size are both required in query." })
+        return
+    }
+
+    try {
+        const data = await getNotificationsWithPagination(studentId, page, pageSize)
+        res.status(200).json(data)
+    } catch (error) {
+        console.error("Error getting notifications with pagination:", error)
+        res.status(500).json({ message: "An unexpected error occurred while getting notifications with pagination." })
     }
 }
