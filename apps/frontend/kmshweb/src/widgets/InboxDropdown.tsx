@@ -42,7 +42,7 @@ const InboxDropdown = () => {
   };
 
   const getFirst5Notifications = async () => {
-    const res = await fetch("/api/student/notifications?count=5", {
+    const res = await fetch("/api/student/notifications?page=1&pagesize=5", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
