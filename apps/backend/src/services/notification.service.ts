@@ -1,5 +1,5 @@
 import prisma from "../config/database"
-import { Device, DeviceType, Prisma } from "@prisma/client"
+import { Device, DeviceType, Prisma, Notification } from "@prisma/client"
 
 /**
  * A placeholder for sending push notification.
@@ -79,4 +79,45 @@ export const notifyOtherTrustedDevices = async (
             await sendPushNotification(device.pushToken, device.type, title, body, notificationPayload)
         }
     }
+}
+
+export const getNotificationsWithPagination = async (
+    studentId: string,
+    page: number,
+    pageSize: number
+) => {
+    const skip = (page - 1) * pageSize;
+
+    const notifications = await prisma.notification.findMany({
+        where: { studentId },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: pageSize,
+    })
+
+    const totalCount = await prisma.notification.count({
+        where: { studentId },
+    })
+
+    return {
+        data: notifications,
+        meta: {
+            page,
+            pageSize,
+            totalPages: Math.ceil(totalCount / pageSize),
+            totalCount,
+        }
+    }
+}
+
+export const getNotificationCount = async (studentId: string, isRead: boolean | null) => {
+    if (isRead === null) {
+        return await prisma.notification.count({
+            where: { studentId }
+        })
+    }
+
+    return await prisma.notification.count({
+        where: { studentId, isRead }
+    })
 }
