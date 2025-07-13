@@ -29,8 +29,6 @@ const InboxDropdown = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { accessToken } = useAuth();
 
-  // TODO: These two functions are placeholder
-
   const getUnreadNotificationCount = async (): Promise<number> => {
     const res = await fetch("/api/student/notifications/count?role=unread", {
       headers: {
@@ -52,7 +50,8 @@ const InboxDropdown = () => {
     setNotifications(data.notifications);
   };
 
-  const unreadCount = use(getUnreadNotificationCount());
+  // const unreadCount = use(getUnreadNotificationCount());
+  const unreadCount = 3;
 
   return (
     <div className="dropdown dropdown-end">
