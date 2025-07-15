@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshAccessToken = async (): Promise<string> => {
     try {
-      const res = await fetch("/api/auth/refresh", {
+      const res = await fetch("kmshweb.com/api/auth/refresh", {
         method: "POST",
         credentials: "include",
       });
@@ -48,3 +48,5 @@ export function useAuth(): AuthContextType {
   if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
+
+export const useAuthFetch = () => {};

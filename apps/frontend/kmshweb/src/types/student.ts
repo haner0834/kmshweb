@@ -21,7 +21,10 @@ export type NotificationType = "update" | "warning" | "other";
 export type NotificationIcon = "score" | "auth" | "bus" | "disciplinary";
 
 export interface Notification {
+  id: string;
   title: string;
   type: NotificationType;
   icon: NotificationIcon;
+  path: string
+  isRead: boolean;
 }

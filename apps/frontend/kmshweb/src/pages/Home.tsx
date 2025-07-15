@@ -54,14 +54,16 @@ const CARD_ITEMS: CardProbs[] = [
     title: "考試成績",
     path: "/examscore",
   },
-  //   {
-  //     img: logo,
-  //     title: "學習歷程",
-  //   },
-  //   {
-  //     img: logo,
-  //     title: "社團",
-  //   },
+  // {
+  //   img: logo,
+  //   title: "學習歷程",
+  //   path: "/examscore",
+  // },
+  // {
+  //   img: logo,
+  //   title: "社團",
+  //   path: "/examscore",
+  // },
   {
     img: coffeeroll,
     title: "獎懲",
@@ -87,7 +89,13 @@ const Home = () => {
       <div className={`${isMobile ? "w-screen" : ""} pb-8`}>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-20 p-8">
           {CARD_ITEMS.map((item) => (
-            <Card img={item.img} title={item.title} path={item.path} />
+            // TODO: Add key to the card
+            <Card
+              key={item.title}
+              img={item.img}
+              title={item.title}
+              path={item.path}
+            />
           ))}
         </div>
 

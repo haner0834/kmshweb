@@ -2,7 +2,8 @@ import ThemeToggle from "./ThemeToggle";
 import { useNavigate } from "react-router";
 import { Outlet } from "react-router";
 import coffeeRoll from "../assets/coffee_roll.png";
-import InboxDropdown from "./InboxDropdown";
+import InboxDropdown, { NotificationInboxIcon } from "./InboxDropdown";
+import { Suspense } from "react";
 
 type NavbarButton = "themeToggle" | "login" | "inbox" | "sidebarToggle";
 
