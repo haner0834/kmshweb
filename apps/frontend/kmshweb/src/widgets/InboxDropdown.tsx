@@ -1,4 +1,4 @@
-import { Suspense, use, useEffect, useState, useMemo } from "react";
+import { Suspense, use, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import logo from "../assets/react.svg";
 import { type Notification, type NotificationIcon } from "../types/student";
