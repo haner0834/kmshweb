@@ -1,6 +1,24 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@font-face {
+  font-family: Outfit;
+  src: url("../src/assets/fonts/Outfit-Medium.ttf");
+}
+
+@theme {
+  --font-outfit: Outfit, "sans-serif";
+}
+
+.hide-scrollbar {
+  /* For Webkit-based browsers (Chrome, Safari and Opera) */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera*/
+}
 /* @plugin "daisyui" {
   themes: all;
 } */
