@@ -74,7 +74,7 @@ export const useAuthFetch = () => {
           }
 
           // --- Refreshing Access Token (HTTP 401/403) ---
-          if (res.status === 401 || res.status === 403) {
+          if (res.status === 401) {
             console.warn(
               `[AuthFetch] Attempt ${attempt}: Recieved ${res.status} error, trying to refresh Access Token...`
             );
@@ -111,7 +111,7 @@ export const useAuthFetch = () => {
             }
           }
 
-          // --- Other error (Not 2xx, not 401/403) ---
+          // --- Other error (Not 2xx, not 401) ---
           const errorData = await res.json().catch(() => null); // Try parsing the error response body
           throw new HttpError(
             `API Request Failed, status: ${res.status}`,
