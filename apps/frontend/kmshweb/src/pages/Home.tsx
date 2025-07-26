@@ -2,6 +2,8 @@ import { useMediaQuery } from "react-responsive";
 import logo from "../assets/react.svg";
 import coffeeroll from "@shared/app_icons/coffee_roll.png";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 
 type CardProbs = {
   img: string;
@@ -83,6 +85,11 @@ const CARD_ITEMS: CardProbs[] = [
 
 const Home = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
+  const { setNavbarButtonsByType } = useNavbarButtons();
+
+  useEffect(() => {
+    setNavbarButtonsByType(["logo", "themeToggle", "inbox"]);
+  }, []);
 
   return (
     <div className="w-screen min-h-screen flex justify-center bg-base-300">
