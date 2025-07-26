@@ -83,7 +83,7 @@ export const useAuthFetch = () => {
             // there is no need to refresh again, just throw an error
             if (attempt === maxAttempts) {
               lastError = new HttpError(
-                "認證失敗且已達重試上限",
+                "Authentication failed and the retry limit has been reached",
                 res.status,
                 await res.json().catch(() => null)
               );
@@ -95,7 +95,9 @@ export const useAuthFetch = () => {
               const newToken = await refreshAccessToken();
               tokenToUse = newToken; // Use the newly obtained token for the next retry
               console.log(
-                `[AuthFetch] Token 刷新成功，將進行第 ${attempt + 1} 次嘗試。`
+                `[AuthFetch] Token refresh succeeded, ${
+                  attempt + 1
+                }th attempt will be made.`
               );
               continue; // Immediately enter the next loop to retry the request
             } catch (refreshError) {
