@@ -8,7 +8,8 @@ export type NavbarButtonType =
   | "login"
   | "inbox"
   | "navbarTitle"
-  | "sidebarToggle";
+  | "sidebarToggle"
+  | "back";
 
 type NavbarButtonPlacement = "start" | "center" | "end";
 
@@ -19,11 +20,7 @@ export type NavbarButton = {
   content: React.ReactNode;
 };
 
-type NavbarProps = {
-  navbarTitle?: string;
-};
-
-const Navbar = ({ navbarTitle = "" }: NavbarProps) => {
+const Navbar = () => {
   const [positionedButtons, setPositionedButtons] =
     useState<Map<NavbarButtonPlacement, NavbarButton[]>>();
 

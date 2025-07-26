@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-import { getSubjectTypeName, type Exam, type Subject } from "../types/student";
+import {
+  exams,
+  getSubjectTypeName,
+  type Exam,
+  type Subject,
+} from "../types/student";
 import "../App.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useModal } from "../widgets/ModalContext";
 import MenuIcon from "@shared/icons/menu.svg?react";
-import ChevronLeft from "@shared/icons/chevron_left.svg?react";
 import ChevronRight from "@shared/icons/chevron_right.svg?react";
 import CheckMark from "@shared/icons/checkmark.svg?react";
 import {
@@ -16,192 +20,7 @@ import ResponsiveSheet from "../widgets/ResponsiveSheet";
 import { useDevice } from "../widgets/DeviceContext";
 import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
-
-const exams: Exam[] = [
-  {
-    id: "1",
-    name: "一週",
-    defaultOrder: 3,
-    timeOrder: 0,
-    type: "main",
-    semesterId: "",
-    subjects: [
-      {
-        id: "1",
-        name: "國文",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "2",
-        name: "數學",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "95",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "3",
-        name: "化學",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "98",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "4",
-        name: "英文",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "92",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "一段",
-    defaultOrder: 0,
-    timeOrder: 1,
-    type: "main",
-    semesterId: "",
-    subjects: [
-      {
-        id: "1",
-        name: "國文",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "90",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "2",
-        name: "數學",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "95",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "3",
-        name: "化學",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "98",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "4",
-        name: "英文",
-        type: "nationalMandatory",
-        credit: 4,
-        score: "92",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "5",
-        name: "化學",
-        type: "otherElective",
-        credit: 4,
-        score: "98",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-      {
-        id: "6",
-        name: "英文",
-        type: "schoolElective",
-        credit: 4,
-        score: "92",
-        isCreditGained: true,
-        examId: "1",
-        sortOrder: 0,
-      },
-    ],
-  },
-  {
-    id: "3",
-    name: "二週",
-    defaultOrder: 4,
-    timeOrder: 2,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-  {
-    id: "4",
-    name: "二段",
-    defaultOrder: 1,
-    timeOrder: 3,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-  {
-    id: "5",
-    name: "三週",
-    defaultOrder: 2,
-    timeOrder: 4,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-  {
-    id: "6",
-    name: "三段",
-    defaultOrder: 5,
-    timeOrder: 5,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-  {
-    id: "7",
-    name: "一週",
-    defaultOrder: 3,
-    timeOrder: 0,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-  {
-    id: "8",
-    name: "一段",
-    defaultOrder: 0,
-    timeOrder: 1,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-  {
-    id: "12",
-    name: "學期總成績",
-    defaultOrder: 4,
-    timeOrder: 2,
-    type: "main",
-    semesterId: "",
-    subjects: [],
-  },
-];
+import BackButton from "../widgets/BackButton";
 
 interface ExamTabsProps {
   exams: Exam[];
@@ -458,18 +277,6 @@ const SheetContent = ({
   );
 };
 
-const BackButton = () => {
-  const navigate = useNavigate();
-  const goBack = () => navigate(-1);
-
-  return (
-    <div className="flex items-center" onClick={goBack}>
-      <ChevronLeft className="w-7 h-7" />
-      返回
-    </div>
-  );
-};
-
 const SemesterTitle = ({
   title,
   subtitle,
@@ -480,10 +287,7 @@ const SemesterTitle = ({
   const navigate = useNavigate();
 
   return (
-    <div
-      className="flex items-center"
-      onClick={() => navigate("examscore/semesters")}
-    >
+    <div className="flex items-center" onClick={() => navigate("/semesters")}>
       <div className="join-vertical flex justify-center items-center">
         <p className="font-bold text-sm">{title}</p>
         <p className="opacity-60 text-xs">{subtitle}</p>

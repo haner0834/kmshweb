@@ -4,6 +4,7 @@ import NavbarLogo from "./NavbarLogo";
 import InboxDropdown from "./InboxDropdown";
 import ThemeToggle from "./ThemeToggle";
 import LoginButton from "./LoginButton";
+import BackButton from "./BackButton";
 
 type NavbarButtonsContextType = {
   navbarButtons: NavbarButton[];
@@ -66,6 +67,15 @@ export const NavbarButtonTypeMap = new Map<NavbarButtonType, NavbarButton>([
       id: "navbar_login",
       order: 2,
       content: <LoginButton />,
+    },
+  ],
+  [
+    "back",
+    {
+      placement: "start",
+      id: "navbar_back",
+      order: -1,
+      content: <BackButton />,
     },
   ],
 ]);

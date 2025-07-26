@@ -6,16 +6,9 @@ import Root from "./pages/Root";
 import RedirectFailed from "./pages/RedirectFailed";
 import Intro from "./pages/Intro";
 import ExamScore from "./pages/ExamScore";
-import { useEffect } from "react";
-import { useNavbarButtons } from "./widgets/NavbarButtonsContext";
+import SemestersListing from "./pages/SemestersListing";
 
 function App() {
-  // const { setNavbarButtonsByType } = useNavbarButtons();
-  // useEffect(() => {
-  //   console.log("Run App");
-  //   setNavbarButtonsByType(["logo", "themeToggle"]);
-  // }, []);
-
   return (
     <Routes>
       <Route path="/" element={<Navbar />}>
@@ -23,6 +16,7 @@ function App() {
         <Route path="home" element={<Home />}></Route>
         <Route path="intro" element={<Intro />} />
         <Route path="examscore" element={<ExamScore />} />
+        <Route path="semesters" element={<SemestersListing />} />
 
         <Route path="error/">
           <Route path="redirectfailed" element={<RedirectFailed />} />
