@@ -19,7 +19,10 @@ const Section = ({ title = "", itemTitles = [], content }: SectionProps) => {
 
           {itemTitles.map((item) => {
             return (
-              <div className="uppercase text-xs font-semibold opacity-50 w-full whitespace-nowrap text-end">
+              <div
+                key={item}
+                className="uppercase text-xs font-semibold opacity-50 w-full whitespace-nowrap text-end"
+              >
                 {item}
               </div>
             );
