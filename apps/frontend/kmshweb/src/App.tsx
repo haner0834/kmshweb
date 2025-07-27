@@ -7,6 +7,7 @@ import RedirectFailed from "./pages/RedirectFailed";
 import Intro from "./pages/Intro";
 import ExamScore from "./pages/ExamScore";
 import SemestersListing from "./pages/SemestersListing";
+import Login from "./pages/Login";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="intro" element={<Intro />} />
         <Route path="examscore" element={<ExamScore />} />
         <Route path="semesters" element={<SemestersListing />} />
+        <Route path="login" element={<Login />} />
 
         <Route path="error/">
           <Route path="redirectfailed" element={<RedirectFailed />} />
