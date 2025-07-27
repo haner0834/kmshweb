@@ -75,9 +75,9 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
 
       <dialog ref={modalRef} className="modal">
         <div
-          className={`bg-base-100 p-6 ${
+          className={`bg-base-100 p-6 min-w-xs ${
             isMobile ? "text-center" : ""
-          } rounded-2xl max-w-120 shadow-lg m-15 transition-all duration-300 origin-center ${
+          } rounded-2xl max-w-120 shadow-lg transition-all duration-300 origin-center ${
             isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
         >
@@ -99,12 +99,12 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
           )}
 
           {modalOptions.description && (
-            <p className={`py-4 ${isMobile ? "opacity-50 pb-5" : ""}`}>
+            <p className={`py-4 ${isMobile ? "opacity-50" : ""}`}>
               {modalOptions.description}
             </p>
           )}
 
-          <div className={isMobile ? "space-y-4" : "modal-action"}>
+          <div className={`${isMobile ? "space-y-4" : "modal-action"}`}>
             {modalOptions.buttons?.map((btn, idx) => (
               <button
                 key={idx}
