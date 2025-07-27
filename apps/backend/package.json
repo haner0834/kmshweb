@@ -2,6 +2,7 @@
   "dependencies": {
     "@prisma/client": "^6.10.1",
     "axios-cookiejar-support": "^6.0.3",
+    "dotenv": "^17.2.1",
     "tough-cookie": "^5.1.2"
   },
   "devDependencies": {
