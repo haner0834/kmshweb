@@ -6,6 +6,8 @@ import { useAuthFetch } from "../auth/useAuthFetch";
 import type { LoginRequestBody } from "../types/auth";
 import { getClientDeviceId } from "../utils/device";
 import NavbarLogo from "../widgets/NavbarLogo";
+import Eye from "@shared/icons/eye.svg?react";
+import EyeSlash from "@shared/icons/eye_slash.svg?react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const Login = () => {
   const [waiting, setWaiting] = useState(false);
   const [trustDevice, setTrustDevice] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const openModal = () => {
     showModal({
@@ -109,16 +112,27 @@ const Login = () => {
             ) : null}
             {/* Password input field */}
             <label className="label">密碼</label>
-            <input
-              type="password"
+            <label
               className={`input ${
                 !password && wasSubmitted ? "border-error" : ""
               }`}
-              required
-              placeholder="密碼"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            >
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                placeholder="密碼"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button onClick={() => setShowPassword((prev) => !prev)}>
+                {showPassword ? (
+                  <EyeSlash className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
+              </button>
+            </label>
             {!password && wasSubmitted && (
               <div className="text-xs text-error">必填</div>
             )}
