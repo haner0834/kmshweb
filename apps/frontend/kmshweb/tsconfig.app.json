@@ -25,7 +25,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "baseUrl": "src", // or "src" if all imports are from `src`
+    "baseUrl": "src/*", // or "src" if all imports are from `src`
     "paths": {
       "@shared/*": ["../../../../shared/*"],
       "@assets/*": ["../assets/*"],
