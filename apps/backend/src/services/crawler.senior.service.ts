@@ -145,3 +145,8 @@ export const getScoreTable = async (cookieString: string): Promise<string> => {
     const html = await performFncRequest("scoreTable", cookieString)
     return html
 }
+
+export const getDisciplinaryPage = async (cookieString: string): Promise<string> => {
+    const html = await performFncRequest("disciplinary", cookieString)
+    return html
+}

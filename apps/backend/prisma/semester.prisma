@@ -1,15 +1,15 @@
 model Semester {
-    id             String         @id @default(cuid())
-    name           String
-    createAt       DateTime       @default(now())
-    sortOrder      Int            @default(autoincrement())
-    studentId      String
-    student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
-    exams          Exam[]
-    disciplinaries Disciplinary[]
-    classOfficer   String?
-    term           SemesterTerm
+    id           String       @id @default(cuid())
+    name         String
+    createAt     DateTime     @default(now())
+    sortOrder    Int          @default(autoincrement())
+    studentId    String
+    student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    exams        Exam[]
+    classOfficer String?
+    term         SemesterTerm
 
+    @@unique([name, studentId], name: "unique_semester_key")
     @@map("Semester")
 }
 

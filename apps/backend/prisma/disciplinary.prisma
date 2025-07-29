@@ -1,13 +1,20 @@
-model Disciplinary {
-    id           String            @id @default(cuid())
+model DisciplinaryEvent {
+    id String @id @default(cuid())
+
+    // The unique identifier for the event
+    studentId    String
     incidentDate DateTime
     approvalDate DateTime
-    type         DisciplinaryLevel
     reason       String
-    student      Student           @relation(fields: [studentId], references: [id])
-    studentId    String            @unique
-    semester     Semester          @relation(fields: [semesterId], references: [id])
-    semesterId   String            @unique
+    type         DisciplinaryLevel // Your enum for commendation, warning, etc.
+
+    // The data
+    count Int @default(1)
+
+    // Relation
+    student Student @relation(fields: [studentId], references: [id])
+
+    @@unique([studentId, incidentDate, approvalDate, reason, type], name: "unique_disciplinary_event")
 }
 
 enum DisciplinaryLevel {

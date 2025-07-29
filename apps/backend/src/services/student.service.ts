@@ -4,12 +4,54 @@ import redis from "../config/redis";
 import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData, getStudentLevel } from "../types/student.types";
 import { decryptUek, decryptWithUek } from "../utils/crypto.utils";
 import prisma from "../config/database";
-import { Prisma, Semester } from "@prisma/client";
-import { extractRocYear, extractSemesterTerm } from "./parser.senior/scoretable.service";
+import { DisciplinaryEvent, Prisma, Semester } from "@prisma/client";
+import { extractRocYear, extractSemesterTerm, getSemesterName } from "./parser.senior/scoretable.service";
 import { error } from "console";
 import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
-import { getLoginCookie, setLoginCookie } from "../utils/redis.utils";
+import { getLoginCookieFromRedis, setLoginCookieToRedis } from "../utils/redis.utils";
 import { SemesterWithDetails } from "../types/crawler.senior.types";
+import dotent from "dotenv";
+import { DisciplinaryEventDTO, extractStudentName, parseStudentDisciplinaryPage } from "./parser.senior/disciplinarypage.service";
+import { html } from "cheerio";
+
+dotent.config()
+
+/**
+ * Get login cookie from Redis if exist, otherwise re-login to the original website and get session cookie.
+ * @param studentId Student ID.
+ * @returns Cookie from Redis or original website.
+ */
+export const getLoginCookie = async (studentId: string): Promise<string> => {
+    let cookie = await getLoginCookieFromRedis(studentId)
+    if (!cookie) {
+        // Re-login to the original system and get the cookie
+        const secureData = await prisma.student.findUnique({
+            where: { id: studentId },
+            select: {
+                password: true,
+                encryptedUek: true
+            }
+        })
+        if (!secureData) { throw new Error("Couldn't find student.") }
+
+        const uek = decryptUek(Buffer.from(secureData.encryptedUek))
+        if (!uek) { throw new Error("Failed to decrypt User Encryption Key (UEK).") }
+
+        const password = decryptWithUek(Buffer.from(secureData.password), uek)
+        if (!password) { throw new Error("Failed to decrypt password.") }
+
+        const newCookie = await seniorSystem.loginAndGetCookie({ sid: studentId, password })
+        await seniorSystem.initializeSession(newCookie)
+
+        await setLoginCookieToRedis(newCookie, studentId)
+
+        cookie = newCookie
+
+        await seniorSystem.initializeSession(cookie)
+    }
+
+    return cookie
+}
 
 // MARK: Shared
 /**
@@ -27,7 +69,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
             const cookie = await seniorSystem.loginAndGetCookie({ sid, password })
             seniorSystem.initializeSession(cookie)
 
-            await setLoginCookie(cookie, sid)
+            await setLoginCookieToRedis(cookie, sid)
         } else if (sid.length === JUNIOR_SID_LENGTH) {
             // Login junior system
         } else {
@@ -44,7 +86,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
 export const getStudentDataFromOldSite = async (sid: string, password: string): Promise<StudentData> => {
     if (sid.length === SENIOR_SID_LENGTH) {
         const redisKey = `session:senior:${sid}`
-        let cookie = await getLoginCookie(sid)
+        let cookie = await getLoginCookieFromRedis(sid)
 
         if (!cookie) {
             // Re-login to the original system and get the cookie
@@ -348,4 +390,123 @@ export const getSemesterById = async (studentId: string, id: string): Promise<Se
     }
 
     return semester
+}
+
+/**
+ * Updates the disciplinary events for a given student by synchronizing the latest events
+ * from the external senior system with the local database.
+ *
+ * This function performs the following steps:
+ * 1. Retrieves the login cookie for the student.
+ * 2. Fetches and parses the student's disciplinary page.
+ * 3. Extracts and maps unique disciplinary events.
+ * 4. Compares the parsed events with existing events in the database to determine which
+ *    events need to be created or deleted.
+ * 5. Executes a database transaction to create new events and delete obsolete ones.
+ *
+ * @param studentId - The unique identifier of the student whose disciplinary events are to be updated.
+ * @returns A promise that resolves to an array of `DisciplinaryEventDTO` representing the latest disciplinary events.
+ * @throws Will throw an error if the semester name or student is not found.
+ */
+export const updateDisplinary = async (studentId: string): Promise<DisciplinaryEventDTO[]> => {
+    const cookie = await getLoginCookie(studentId)
+
+    const page = await seniorSystem.getDisciplinaryPage(cookie)
+    const parsedDisciplinary = parseStudentDisciplinaryPage(page)
+    const semesterName = extractStudentName(page)
+    if (!semesterName) throw new Error("No semester name found with given html page.")
+
+    const mapped = parsedDisciplinary.events.map((event, index) => {
+        return {
+            index,
+            uniqueKey: event.approvalDate + event.incidentDate + event.reason + parsedDisciplinary.student.id + event.type
+        }
+    })
+
+    await prisma.$transaction(async (tx) => {
+        const student = await prisma.student.findUnique({
+            where: { id: studentId },
+            include: { disciplinaryEvents: true }
+        })
+        if (!student) throw new Error("No student found.")
+
+        // there're 3 types of events: 
+        // 1. to create
+        // 2. to delete
+        // 3. to update
+        // maybe there would not be any events to update, but idk
+        const existingEvents = student.disciplinaryEvents
+        // to filter out events to update, use unique_disciplinary_event,
+        // which consists of approval date, incident date, student id, reason, and type.
+        const mappedExistingEvents = existingEvents.map((event, index) => {
+            return {
+                index,
+                uniqueKey: event.approvalDate.toISOString()
+                    + event.incidentDate.toISOString()
+                    + event.reason
+                    + parsedDisciplinary.student.id
+                    + event.type
+            }
+        })
+        // now, compare them with the new one
+        const eventsToCreate = mapped.filter(event =>
+            !mappedExistingEvents.some(e =>
+                e.uniqueKey === event.uniqueKey
+            )
+        ).map(event => parsedDisciplinary.events[event.index])
+
+        const eventsToDelete = mappedExistingEvents.filter(event =>
+            !mapped.some(e =>
+                e.uniqueKey === event.uniqueKey
+            )
+        ).map(event => existingEvents[event.index])
+
+        for (const event of eventsToCreate) {
+            await tx.disciplinaryEvent.create({
+                data: {
+                    studentId,
+                    approvalDate: new Date(event.approvalDate),
+                    incidentDate: new Date(event.incidentDate),
+                    type: event.type,
+                    reason: event.reason,
+                    count: event.count
+                }
+            })
+        }
+
+        for (const event of eventsToDelete) {
+            await tx.disciplinaryEvent.create({
+                data: {
+                    studentId,
+                    approvalDate: event.approvalDate,
+                    incidentDate: event.incidentDate,
+                    type: event.type,
+                    reason: event.reason,
+                    count: event.count
+                }
+            })
+        }
+    })
+
+    return parsedDisciplinary.events
+}
+
+/**
+ * Get the disciplinary events for a given student id from database.
+ * @param studentId - The unique identifier of the student whose disciplinary events are to be query.
+ * @returns A promise that resolves to an array of `DisciplinaryEventDTO` representing the latest disciplinary events. 
+ */
+export const getDisciplinaryFromDb = async (studentId: string): Promise<DisciplinaryEventDTO[] | null> => {
+    const events = await prisma.disciplinaryEvent.findMany({
+        where: { studentId }
+    })
+
+    return events.map(event => ({
+        approvalDate: event.approvalDate.toISOString(),
+        incidentDate: event.incidentDate.toISOString(),
+        studentId: event.studentId,
+        reason: event.reason,
+        type: event.type,
+        count: event.count,
+    }))
 }
