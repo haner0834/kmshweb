@@ -1,8 +1,7 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import * as studentService from "../services/student.service"
 import { AuthRequest } from "../types/auth.types";
 import { getNotificationCount, getNotificationsWithPagination } from "../services/notification.service";
-import { is } from "cheerio/dist/commonjs/api/traversing";
 
 /**
  * Handles the HTTP request to retrieve a student's profile by their student ID (sid).
@@ -260,5 +259,20 @@ export const getNotificationsWithPaginationHandler = async (req: AuthRequest, re
     } catch (error) {
         console.error("Error getting notifications with pagination:", error)
         res.status(500).json({ message: "An unexpected error occurred while getting notifications with pagination." })
+    }
+}
+
+export const getDisciplinaryHandler = async (req: AuthRequest, res: Response) => {
+    const studentId = req.student?.id
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." })
+        return
+    }
+
+    try {
+        const displinaryEvents = await studentService.updateDisplinary(studentId)
+        res.status(200).json(displinaryEvents)
+    } catch (error) {
+        res.status(500).json({ message: "An unexpected error occurred while getting disciplinary events." })
     }
 }

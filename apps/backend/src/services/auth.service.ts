@@ -76,7 +76,6 @@ export const register = async (sid: string, password: string): Promise<Student> 
             graduationSchool: studentData.graduationSchool,
             status: studentData.enrollmentStatus,
             credential: studentData.credential,
-            phoneNumber: Buffer.from(''),
             classId: relatedClass.id,
             enabledNotifications: Object.values(NotificationType),
             isQuickAccessOpen: true,

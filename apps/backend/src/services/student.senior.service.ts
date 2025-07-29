@@ -1,14 +1,14 @@
 import { extractSemesterTerm, getSemesterName, parseScoresTable } from "./parser.senior/scoretable.service"
 import { getScoreTable, initializeSession, loginAndGetCookie } from "./crawler.senior.service"
 import prisma from "../config/database"
-import { getLoginCookie } from "../utils/redis.utils"
+import { getLoginCookieFromRedis } from "../utils/redis.utils"
 import { Subject, Exam, Prisma } from "@prisma/client"
 import { getCurrentStudentSemesterFromDb } from "./student.service"
 import { SemesterWithDetails } from "../types/crawler.senior.types"
 
 export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: string): Promise<SemesterWithDetails | null> => {
     // Get login session cookie
-    let cookie = await getLoginCookie(sid)
+    let cookie = await getLoginCookieFromRedis(sid)
     if (!cookie) {
         // Re-login to the old site
         const newCookie = await loginAndGetCookie({ sid, password })
