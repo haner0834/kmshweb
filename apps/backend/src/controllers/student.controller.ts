@@ -4,6 +4,7 @@ import { AuthRequest } from "../types/auth.types";
 import { getNotificationCount, getNotificationsWithPagination } from "../services/notification.service";
 import { StudentData } from "../types/student.types";
 import { Semester } from "@prisma/client";
+import { AuthError } from "../services/auth.service";
 
 /**
  * Handles the HTTP request to retrieve a student's profile by their student ID (sid).
@@ -198,6 +199,29 @@ export const getExamByNameInCurrentSemesterHandler = async (req: AuthRequest, re
     }
 };
 
+export const getExamByIdHandler = async (req: AuthRequest, res: Response) => {
+    const examId = req.params.id
+    const studentId = req.student?.id
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." });
+        return;
+    }
+
+    try {
+        const exam = await studentService.getExamById(studentId, examId)
+        if (!exam) {
+            res.status(404).json({ message: `Exam with id '${examId}' not found in the current semester.` })
+            return
+        }
+        res.status(200).json(exam)
+    } catch (error) {
+        if (error instanceof AuthError) {
+            res.status(403).json({ message: error.message })
+            return
+        }
+        res.status(500).json({ message: "An unexpected error occurred while fetching the exam." })
+    }
+}
 /**
  * Handles the request to retrieve and update the current semester for a student.
  *
