@@ -2,6 +2,8 @@ import { Response } from "express";
 import * as studentService from "../services/student.service"
 import { AuthRequest } from "../types/auth.types";
 import { getNotificationCount, getNotificationsWithPagination } from "../services/notification.service";
+import { StudentData } from "../types/student.types";
+import { Semester } from "@prisma/client";
 
 /**
  * Handles the HTTP request to retrieve a student's profile by their student ID (sid).
@@ -20,8 +22,16 @@ export const getStudentProfileHandler = async (req: AuthRequest, res: Response):
         return
     }
 
+    const source = req.query.source
+
     try {
-        const studentData = await studentService.getStudentProfileFromDb(sid);
+        let studentData: StudentData | null = null
+
+        if (source === "origin") {
+            studentData = await studentService.updateStudentProfileFromOldSite(sid)
+        } else {
+            studentData = await studentService.getStudentProfileFromDb(sid)
+        }
 
         if (!studentData) {
             res.status(404).json({ message: `Student with ID ${sid} not found.` });
@@ -123,8 +133,15 @@ export const getCurrentSemesterHandler = async (req: AuthRequest, res: Response)
         return;
     }
 
+    const source = req.query.source
+
     try {
-        const currentSemester = await studentService.getCurrentStudentSemesterFromDb(studentId);
+        let currentSemester: Semester | null = null
+        if (source === "origin") {
+            currentSemester = await studentService.getCurrentSemesterAndUpdate(studentId);
+        } else {
+            currentSemester = await studentService.getCurrentStudentSemesterFromDb(studentId)
+        }
 
         if (!currentSemester) {
             res.status(404).json({ message: `No semesters found for student ID ${studentId}.` });

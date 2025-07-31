@@ -1,22 +1,16 @@
 import { extractSemesterTerm, getSemesterName, parseScoresTable } from "./parser.senior/scoretable.service"
 import { getScoreTable, initializeSession, loginAndGetCookie } from "./crawler.senior.service"
 import prisma from "../config/database"
-import { getLoginCookieFromRedis } from "../utils/redis.utils"
 import { Subject, Exam, Prisma } from "@prisma/client"
-import { getCurrentStudentSemesterFromDb } from "./student.service"
+import { getCurrentStudentSemesterFromDb, getLoginCookie } from "./student.service"
 import { SemesterWithDetails } from "../types/crawler.senior.types"
 
 export const fetchScoreDataFromOldSeniorSite = async (sid: string, password: string): Promise<SemesterWithDetails | null> => {
     // Get login session cookie
-    let cookie = await getLoginCookieFromRedis(sid)
-    if (!cookie) {
-        // Re-login to the old site
-        const newCookie = await loginAndGetCookie({ sid, password })
-        await initializeSession(newCookie)
-        cookie = newCookie
-    }
+    let cookie = await getLoginCookie(sid)
 
     const scoreTable = await getScoreTable(cookie)
+    console.log(scoreTable)
     const scoresMap = parseScoresTable(scoreTable) // The id of both subjects and exams are empty, so avoid using it while creating/updating.
     const semesterName = getSemesterName(scoreTable)
 
