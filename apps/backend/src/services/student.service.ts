@@ -4,17 +4,12 @@ import redis from "../config/redis";
 import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData, getStudentLevel, ExamSummary, SemesterSummary } from "../types/student.types";
 import { decryptUek, decryptWithUek } from "../utils/crypto.utils";
 import prisma from "../config/database";
-import { DisciplinaryEvent, Prisma, Semester } from "@prisma/client";
+import { Prisma, Semester } from "@prisma/client";
 import { extractRocYear, extractSemesterTerm, getSemesterName } from "./parser.senior/scoretable.service";
-import { error } from "console";
 import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
 import { getLoginCookieFromRedis, setLoginCookieToRedis } from "../utils/redis.utils";
 import { SemesterWithDetails } from "../types/crawler.senior.types";
-import dotent from "dotenv";
 import { DisciplinaryEventDTO, extractStudentName, parseStudentDisciplinaryPage } from "./parser.senior/disciplinarypage.service";
-import { html } from "cheerio";
-
-dotent.config()
 
 /**
  * Get login cookie from Redis if exist, otherwise re-login to the original website and get session cookie.
@@ -85,20 +80,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
 
 export const getStudentDataFromOldSite = async (sid: string, password: string): Promise<StudentData> => {
     if (sid.length === SENIOR_SID_LENGTH) {
-        const redisKey = `session:senior:${sid}`
-        let cookie = await getLoginCookieFromRedis(sid)
-
-        if (!cookie) {
-            // Re-login to the original system and get the cookie
-            const newCookie = await seniorSystem.loginAndGetCookie({ sid, password })
-            await seniorSystem.initializeSession(newCookie)
-
-            await redis.set(redisKey, newCookie)
-
-            cookie = newCookie
-
-            await seniorSystem.initializeSession(cookie)
-        }
+        let cookie = await getLoginCookie(sid)
 
         const profileContent = await seniorSystem.getStudentProfile(cookie)
         const parsedProfile = parseProfile(profileContent)
