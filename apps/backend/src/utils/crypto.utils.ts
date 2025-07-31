@@ -1,15 +1,13 @@
 import crypto from "crypto"
 import bcrypt from "bcrypt"
-import dotenv from "dotenv"
-
-dotenv.config()
+import { env } from "./env.utils"
 
 const ALGORITHM = 'aes-256-gcm'
 const IV_LENGTH = 12
 const AUTH_TAG_LENGTH = 16
 const KEY_LENGTH = 32
 
-const KEK_HEX = process.env.KEK_HEX
+const KEK_HEX = env("KEK_HEX")
 
 if (!KEK_HEX || Buffer.from(KEK_HEX, "hex").length !== KEY_LENGTH) {
     throw new Error('KEY_ENCRYPTION_KEY is not defined in .env or is not a 32-byte hex string.');

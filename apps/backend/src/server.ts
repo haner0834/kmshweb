@@ -3,9 +3,10 @@ import cors from 'cors';
 import authRouter from "./routers/auth.router"
 import studentRouter from "./routers/student.router"
 import cookieParser from 'cookie-parser';
+import { env } from './utils/env.utils';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = env("PORT", "3000");
 
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
