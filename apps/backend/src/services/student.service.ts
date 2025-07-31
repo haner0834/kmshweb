@@ -4,12 +4,13 @@ import redis from "../config/redis";
 import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData, getStudentLevel, ExamSummary, SemesterSummary } from "../types/student.types";
 import { decryptUek, decryptWithUek } from "../utils/crypto.utils";
 import prisma from "../config/database";
-import { Prisma, Semester } from "@prisma/client";
+import { Exam, Prisma, Semester } from "@prisma/client";
 import { extractRocYear, extractSemesterTerm, getSemesterName } from "./parser.senior/scoretable.service";
 import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
 import { getLoginCookieFromRedis, setLoginCookieToRedis } from "../utils/redis.utils";
 import { SemesterWithDetails } from "../types/crawler.senior.types";
 import { DisciplinaryEventDTO, extractStudentName, parseStudentDisciplinaryPage } from "./parser.senior/disciplinarypage.service";
+import { AuthError } from "./auth.service";
 
 /**
  * Get login cookie from Redis if exist, otherwise re-login to the original website and get session cookie.
@@ -326,6 +327,25 @@ export const getExamByNameInCurrentSemester = async (
 
     return currentSemester?.exams[0] || null;
 };
+
+export const getExamById = async (studentId: string, id: string): Promise<Exam | null> => {
+    const exam = await prisma.exam.findUnique({
+        where: { id },
+        include: {
+            semester: {
+                select: {
+                    studentId: true,
+                },
+            },
+        },
+    })
+
+    if (exam?.semester.studentId !== studentId) {
+        throw new AuthError("Unauthorized access. Permission denied.")
+    }
+    const { semester, ...pureExam } = exam
+    return pureExam
+}
 
 export const getCurrentSemesterAndUpdate = async (studentId: string): Promise<SemesterWithDetails | null> => {
     const secureData = await prisma.student.findUnique({
