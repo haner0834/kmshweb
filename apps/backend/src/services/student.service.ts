@@ -1,7 +1,7 @@
 import * as seniorSystem from "./crawler.senior.service";
 import { parseProfile, convertToStudentData } from "./parser.senior/profile.service";
 import redis from "../config/redis";
-import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData, getStudentLevel } from "../types/student.types";
+import { SENIOR_SID_LENGTH, JUNIOR_SID_LENGTH, StudentData, getStudentLevel, ExamSummary, SemesterSummary } from "../types/student.types";
 import { decryptUek, decryptWithUek } from "../utils/crypto.utils";
 import prisma from "../config/database";
 import { DisciplinaryEvent, Prisma, Semester } from "@prisma/client";
@@ -390,6 +390,63 @@ export const getSemesterById = async (studentId: string, id: string): Promise<Se
     }
 
     return semester
+}
+
+const extractSemesterName = (name: string): { title: string, subtitle: string } => {
+    const [title, subtitle] = name.split(" ")
+    return { title, subtitle }
+}
+
+export const getSemesterSummary = async (studentId: string): Promise<SemesterSummary[]> => {
+    const semesters = await prisma.semester.findMany({
+        where: { studentId },
+        select: {
+            id: true,
+            name: true,
+            exams: {
+                select: {
+                    id: true,
+                    name: true,
+                    averageScore: true,
+                    subjects: {
+                        select: {
+                            score: true,
+                        },
+                        orderBy: {
+                            score: "asc",
+                        },
+                    },
+                },
+            },
+        },
+    })
+
+    // converting to summary by calculating the values
+    const subjectScoreStrings = semesters.flatMap(semester => semester.exams).flatMap(exam => exam.subjects.map(x => x.score))
+    const subjectScores = subjectScoreStrings.map(string => Number(string)).filter(num => !isNaN(num))
+
+    const highestScore = Math.max(...subjectScores)
+    const lowestScore = Math.min(...subjectScores)
+
+    const passCount = subjectScores.filter(score => score >= 60).length
+    const passRate = subjectScores.length > 0 ? passCount / subjectScores.length : 0
+    const averageScore = subjectScores.length > 0 ? subjectScores.reduce((x, p) => x + p) / subjectScores.length : 0
+    const summary: SemesterSummary[] = semesters.map(semester => ({
+        id: semester.id,
+        ...extractSemesterName(semester.name),
+        shortenedTitle: "", // TODO: Calculate shortened title when fetching it from origin site
+        exams: semester.exams.map(exam => ({
+            id: exam.id,
+            name: exam.name,
+            averageScore: exam.averageScore,
+        })),
+        lowestScore,
+        highestScore,
+        averageScore,
+        passRate,
+    }))
+
+    return summary
 }
 
 /**
