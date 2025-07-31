@@ -78,7 +78,7 @@ Examples:
 ## Pull Request Guidelines
 
 - PR branches must follow naming convention.
-- PR titles should reflect the branch name.
+- PR titles should clearly describe the changes.
 - PR description must include:
   - Summary of changes
   - Background or reasoning
