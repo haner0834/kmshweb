@@ -36,3 +36,21 @@ export const getStudentLevel = (sidLength: number): StudentLevel => {
     if (sidLength === SENIOR_SID_LENGTH) return "senior"
     throw new Error("Unknown SID length")
 }
+
+export interface ExamSummary {
+    id: string;
+    name: string;
+    averageScore: number | null;
+}
+
+export interface SemesterSummary {
+    id: string;
+    title: string;
+    subtitle: string;
+    shortenedTitle: string;
+    exams: ExamSummary[];
+    highestScore: number;
+    lowestScore: number;
+    averageScore: number;
+    passRate: number;
+}

@@ -102,12 +102,10 @@ export const getSemesterByIdHandler = async (req: AuthRequest, res: Response): P
     }
 
     try {
-        const semester = studentService.getSemesterById(studentId, semesterId)
+        const semester = await studentService.getSemesterById(studentId, semesterId)
         if (!semester) {
             res.status(404).json({ message: "No semester found with given id." })
         }
-
-
     } catch (error: any) {
         if (error.message === "No permission") {
             res.status(403).json({ message: "Forbidden: You don't have access to this semester." })
@@ -214,6 +212,22 @@ export const getCurrentSemesterAndUpdateHandler = async (req: AuthRequest, res: 
     } catch (error) {
         console.error("Error getting/updating current semester:", error);
         res.status(500).json({ message: "An unexpected error occurred while fetching the current semester." });
+    }
+}
+
+export const getSemesterSummaryHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    const studentId = req.student?.id
+    if (!studentId) {
+        res.status(401).json({ message: "Authentication error: Student ID is missing." })
+        return
+    }
+
+    try {
+        const semesterSummary = await studentService.getSemesterSummary(studentId)
+        res.status(200).json(semesterSummary)
+    } catch (error) {
+        console.error("Error getting semester summary:", error)
+        res.status(500).json({ message: "An unexpected error occurred while getting summary of semesters." })
     }
 }
 
