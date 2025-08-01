@@ -106,16 +106,16 @@ export const login = async (
     const student = await prisma.student.findUnique({ where: { id } })
 
     if (!student) {
-        throw new Error("Wrong ID or password")
+        throw new AuthError("Wrong ID or password")
     }
 
     const uek = cryptoUtil.decryptUek(Buffer.from(student.encryptedUek))
     if (!uek) {
-        throw new Error("Fatal Error: Couldn't decrypt UEK")
+        throw new AuthError("Fatal Error: Couldn't decrypt UEK")
     }
     const decryptedPassword = cryptoUtil.decryptWithUek(Buffer.from(student.password), uek)
     if (decryptedPassword !== password) {
-        throw new Error("Wrong ID or password")
+        throw new AuthError("Wrong ID or password")
     }
 
     const payload: StudentPayload = {
@@ -128,7 +128,7 @@ export const login = async (
     const hashedToken = await cryptoUtil.hashRefreshToken(tokens.refreshToken)
     const verifiedToken = verifyRefreshToken(tokens.refreshToken)
     if (!verifiedToken?.exp) {
-        throw new Error("Couldn't generate valid token")
+        throw new AuthError("Couldn't generate valid token")
     }
     const expiresAt = new Date(verifiedToken.exp * 1000)
 
