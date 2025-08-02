@@ -5,10 +5,12 @@ import studentRouter from "./routers/student.router"
 import cookieParser from 'cookie-parser';
 import { env } from './utils/env.utils';
 import { responseExtender } from './middleware/response.middleware';
+import { traceMiddleware } from './middleware/traceid.middleware';
 
 const app = express();
 const PORT = env("PORT", "3000");
 
+app.use(traceMiddleware)
 app.use(responseExtender)
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
-import { AuthError } from '../services/auth.service';
+import { AuthError } from '../types/error.types';
 import { AuthRequest, LoginRequestBody, RefreshRequestBody } from '../types/auth.types';
 import { DeviceType } from '@prisma/client';
 

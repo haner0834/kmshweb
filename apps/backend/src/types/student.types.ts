@@ -1,4 +1,5 @@
 import { EnrollmentStatus, Gender, Grade, Stream } from "@prisma/client"
+import { InternalError } from "./error.types"
 
 export interface StudentData {
     sid: string
@@ -28,13 +29,13 @@ export type StudentLevel = (typeof StudentLevel)[keyof typeof StudentLevel];
 export const convertToStudentLevel = (grade: Grade): StudentLevel => {
     if (grade.startsWith("junior")) return "junior"
     if (grade.startsWith("senior")) return "senior"
-    throw new Error("Unknown grade")
+    throw new InternalError("Unknown grade")
 }
 
 export const getStudentLevel = (sidLength: number): StudentLevel => {
     if (sidLength === JUNIOR_SID_LENGTH) return "junior"
     if (sidLength === SENIOR_SID_LENGTH) return "senior"
-    throw new Error("Unknown SID length")
+    throw new InternalError("Unknown SID length")
 }
 
 export interface ExamSummary {

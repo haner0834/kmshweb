@@ -1,5 +1,6 @@
 import { DisciplinaryEvent, DisciplinaryLevel } from "@prisma/client"
 import * as cheerio from "cheerio"
+import { InternalError } from "../../types/error.types";
 
 /**
  * DTO for Student Information
@@ -81,7 +82,7 @@ export const extractStudentId = (html: string): string | null => {
 function parseRocDate(rocDateStr: string): string {
     const match = rocDateStr.match(/(\d+)年(\d+)月(\d+)日/);
     if (!match) {
-        throw new Error(`Invalid date format: ${rocDateStr}`);
+        throw new InternalError(`Invalid date format: ${rocDateStr}`);
     }
     const year = parseInt(match[1], 10) + 1911;
     const month = parseInt(match[2], 10) - 1; // Date month is 0-indexed in JS
@@ -104,7 +105,7 @@ export function parseStudentDisciplinaryPage(html: string): ParsedPageDTO {
     const studentIdMatch = extractStudentId(html);
 
     if (!studentNameMatch || !studentIdMatch) {
-        throw new Error("Could not find student name or ID in the HTML. The page structure might have changed.");
+        throw new InternalError("Could not find student name or ID in the HTML. The page structure might have changed.");
     }
 
     const studentInfo: StudentInfoDTO = {
