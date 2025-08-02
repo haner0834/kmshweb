@@ -99,7 +99,7 @@ export const login = async (
     const student = await prisma.student.findUnique({ where: { id } })
 
     if (!student) {
-        throw new AuthError("INVALID_LOGIN", "Wrong ID or password", 401)
+        throw new AuthError("WRONG_ID_PASSWORD", "Wrong ID or password", 401)
     }
 
     const uek = cryptoUtil.decryptUek(Buffer.from(student.encryptedUek))
@@ -108,7 +108,7 @@ export const login = async (
     }
     const decryptedPassword = cryptoUtil.decryptWithUek(Buffer.from(student.password), uek)
     if (decryptedPassword !== password) {
-        throw new AuthError("INVALID_LOGIN", "Wrong ID or password", 401)
+        throw new AuthError("WRONG_ID_PASSWORD", "Wrong ID or password", 401)
     }
 
     const payload: StudentPayload = {

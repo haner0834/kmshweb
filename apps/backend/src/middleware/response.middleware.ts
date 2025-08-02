@@ -3,7 +3,7 @@ import type { ApiSuccess, ApiError } from '../types/api.types';
 
 declare module 'express-serve-static-core' {
     interface Response {
-        success: <T>(data: T, meta?: any) => Response;
+        success: <T>(data: T, meta?: any, statusCode?: number) => Response;
         fail: (code: string, message: string, statusCode?: number) => Response;
         internalServerError: (message: string) => Response;
         noStudentId: () => Response;

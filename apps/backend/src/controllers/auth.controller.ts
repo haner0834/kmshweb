@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
-import { AuthError } from '../types/error.types';
+import { AppError, AuthError } from '../types/error.types';
 import { AuthRequest, LoginRequestBody, RefreshRequestBody } from '../types/auth.types';
 import { DeviceType } from '@prisma/client';
+import { logger } from '../utils/logger.utils';
+import { AuthHandler, TypedResponse } from '../types/api.types';
 
 const refreshTokenCookieOptions = {
     httpOnly: true,
@@ -17,27 +19,31 @@ const refreshTokenCookieOptions = {
  * @param res Express Response object.
  * @returns void
  */
-export const registerHandler = async (req: Request, res: Response): Promise<void> => {
+export const registerHandler = async (req: Request, res: TypedResponse<{ id: string, name: string }>): Promise<void> => {
     const { id, password } = req.body
 
     if (!id || !password) {
-        res.status(400).json({ message: "ID and password are both required." })
+        res.fail("MISSING_ID_PASSWORD", "Missing student ID or password in the request body.", 400)
         return
     }
 
     try {
         const student = await authService.register(id, password);
-        res.status(201).json({
-            message: "Register successed.",
-            student: { id: student.id, name: student.name }
-        })
+        res.success({ id: student.id, name: student.name }, undefined, 201)
     } catch (error) {
-        if (error instanceof AuthError) {
-            res.status(409).json({ message: error.message })
+        if (error instanceof AppError) {
+            logger.error({
+                service: "auth-service",
+                action: "register",
+                error: error,
+                context: {
+                    studentId: id,
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
             return
         }
-        console.error(error);
-        res.status(500).json({ message: "Internal server error." })
+        res.internalServerError("An unexpected error occurred while registering.")
         return
     }
 }
@@ -48,20 +54,20 @@ export const registerHandler = async (req: Request, res: Response): Promise<void
  * @param res Express Response object.
  * @returns void
  */
-export const loginHandler = async (req: Request, res: Response): Promise<void> => {
+export const loginHandler = async (req: Request, res: TypedResponse<{ accessToken: string, refreshToken: string }>): Promise<void> => {
     const { id, password, trustDevice = false, deviceInfo }: LoginRequestBody = req.body;
 
     if (!id || !password) {
-        res.status(400).json({ message: "ID and password are both required." })
+        res.fail("MISSING_ID_PASSWORD", "Missing student ID or password in the request body.")
         return
     }
 
     if (!deviceInfo || !deviceInfo.clientSideDeviceId || !Object.values(DeviceType).includes(deviceInfo.type)) {
-        res.status(400).json({ message: "Valid equipment information must be provided." })
+        res.fail("MISSING_REQUIRED_INFO", "Missing deviceInfo, deviceInfo.clientSideDeviceId or deviceInfo.type")
         return
     }
     if (deviceInfo.type !== 'web' && !deviceInfo.pushToken) {
-        res.status(400).json({ message: "The mobile client must provide a push token." })
+        res.fail("NO_PUSH_TOKEN", "Missing push token from mobile client.")
         return
     }
 
@@ -73,19 +79,25 @@ export const loginHandler = async (req: Request, res: Response): Promise<void> =
 
         res.cookie('refreshToken', tokens.refreshToken, refreshTokenCookieOptions)
 
-        res.status(200).json({
+        res.success({
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
-            message: "Login successed"
         })
     } catch (error) {
-        if (error instanceof AuthError) {
-            res.status(401).json({ message: error.message })
+        if (error instanceof AppError) {
+            logger.error({
+                service: "auth-service",
+                action: "login",
+                error: error,
+                context: {
+                    studentId: id,
+                    deviceInfo,
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
             return
         }
-        console.error(error)
-        res.status(500).json({ message: "Internal server error." })
-        return
+        res.internalServerError("An unexpected error occurred while login.")
     }
 }
 
@@ -95,13 +107,13 @@ export const loginHandler = async (req: Request, res: Response): Promise<void> =
  * @param res Express Response object.
  * @returns void
  */
-export const refreshHandler = async (req: Request, res: Response): Promise<void> => {
+export const refreshHandler = async (req: Request, res: TypedResponse<{ accessToken: string, refreshToken: string }>): Promise<void> => {
     const { refreshToken: bodyToken }: RefreshRequestBody = req.body
     const cookieToken = req.cookies.refreshToken
     const refreshToken = cookieToken || bodyToken
 
     if (!refreshToken) {
-        res.status(401).json({ message: "Refresh token not provided" })
+        res.fail("MISSING_REFRESH_TOKEN", "Missing refresh token from cookie/body.")
         return
     }
 
@@ -112,22 +124,24 @@ export const refreshHandler = async (req: Request, res: Response): Promise<void>
             res.cookie('refreshToken', newTokens.refreshToken, refreshTokenCookieOptions)
         }
 
-        res.status(200).json({
+        res.success({
             accessToken: newTokens.accessToken,
             refreshToken: newTokens.refreshToken, // For app client
             message: "Token refreshed successfully."
         })
     } catch (error) {
-        if (error instanceof AuthError) {
-            if (cookieToken) {
-                res.clearCookie("refreshToken", refreshTokenCookieOptions)
-            }
-            res.status(403).json({ message: error.message })
+        if (error instanceof AppError) {
+            logger.error({
+                service: "auth-service",
+                action: "refresh",
+                error: error,
+                context: {
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
             return
         }
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" })
-        return
+        res.internalServerError("An unexpected error occurred while refreshing.")
     }
 }
 
@@ -157,7 +171,7 @@ export const logoutHandler = async (req: Request, res: Response) => {
  * @param res Express Response object.
  * @returns void
  */
-export const forceLogoutHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+export const forceLogoutHandler = async (req: AuthRequest, res: TypedResponse<{}>): Promise<void> => {
     // The user performing the action, identified by the protect middleware.
     const actorStudentId = req.student?.id
     // The device to be logged out, specified in the request body.
@@ -165,12 +179,13 @@ export const forceLogoutHandler = async (req: AuthRequest, res: Response): Promi
 
     if (!actorStudentId) {
         // This should not happen if `protect` middleware is used correctly.
-        res.status(401).json({ message: "Unauthorized: Couldn't identify user." })
+        // res.status(401).json({ message: "Unauthorized: Couldn't identify user." })
+        res.noStudentId()
         return
     }
 
     if (!deviceId) {
-        res.status(400).json({ message: "The device ID (deviceId) to sign out is required." })
+        res.fail("MISSING_DEVICE_ID", "The device ID (deviceId) to sign out is required.")
         return
     }
 
@@ -178,17 +193,17 @@ export const forceLogoutHandler = async (req: AuthRequest, res: Response): Promi
         await authService.forceLogout(actorStudentId, deviceId)
         res.status(204).send() // 204 No Content is appropriate for a successful action with no body.
     } catch (error) {
-        if (error instanceof AuthError) {
-            // Use 403 Forbidden for permission issues, 404 for not found.
-            if (error.message.includes("Insufficient permissions.")) {
-                res.status(403).json({ message: error.message })
-                return
-            }
-            res.status(404).json({ message: error.message })
+        if (error instanceof AppError) {
+            logger.error({
+                service: "auth-service",
+                action: "refresh",
+                error: error,
+                context: {
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
             return
         }
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' })
-        return
+        res.internalServerError("An unexpected error occurred while force logout.")
     }
 }
