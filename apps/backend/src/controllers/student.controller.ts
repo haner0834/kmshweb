@@ -23,7 +23,7 @@ import { logger } from "../utils/logger.utils";
 export const getStudentProfileHandler: AuthHandler<StudentData> = async (req, res) => {
     const sid = req.student?.id
     if (!sid) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 
@@ -72,7 +72,7 @@ export const getStudentProfileAndUpdateHandler: AuthHandler<StudentData> = async
     const sid = req.student?.id;
 
     if (!sid) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return;
     }
 
@@ -107,7 +107,7 @@ export const getSemestersHandler: AuthHandler<Semester[]> = async (req, res) => 
     const studentId = req.student?.id;
 
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return;
     }
 
@@ -139,7 +139,7 @@ export const getSemesterByIdHandler: AuthHandler<Semester> = async (req, res) =>
     const studentId = req.student?.id
 
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 
@@ -168,7 +168,7 @@ export const getCurrentSemesterHandler: AuthHandler<Semester> = async (req, res)
     const studentId = req.student?.id;
 
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return;
     }
 
@@ -224,7 +224,7 @@ export const getExamByNameInCurrentSemesterHandler: AuthHandler<Exam[]> = async 
     const studentId = req.student?.id;
 
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return;
     }
     if (typeof examName !== 'string' || !examName) {
@@ -257,7 +257,7 @@ export const getExamByIdHandler: AuthHandler<Exam> = async (req, res) => {
     const examId = req.params.id
     const studentId = req.student?.id
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return;
     }
 
@@ -306,7 +306,7 @@ export const getCurrentSemesterAndUpdateHandler: AuthHandler<SemesterWithDetails
     const sid = req.student?.id
 
     if (!sid) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 
@@ -333,7 +333,7 @@ export const getCurrentSemesterAndUpdateHandler: AuthHandler<SemesterWithDetails
 export const getSemesterSummaryHandler: AuthHandler<SemesterSummary> = async (req, res) => {
     const studentId = req.student?.id
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 
@@ -361,7 +361,7 @@ export const getNotificationCountHandler: AuthHandler<number> = async (req, res)
     const studentId = req.student?.id
 
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 
@@ -393,7 +393,7 @@ export const getNotificationCountHandler: AuthHandler<number> = async (req, res)
 export const getNotificationsWithPaginationHandler: AuthHandler<StudentData> = async (req, res) => {
     const studentId = req.student?.id
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 
@@ -429,7 +429,7 @@ export const getNotificationsWithPaginationHandler: AuthHandler<StudentData> = a
 export const getDisciplinaryHandler: AuthHandler<DisciplinaryEventDTO[]> = async (req, res) => {
     const studentId = req.student?.id
     if (!studentId) {
-        res.fail("NO_SID", "Authentication error: Student ID is missing from the request payload.", 401)
+        res.noStudentId()
         return
     }
 

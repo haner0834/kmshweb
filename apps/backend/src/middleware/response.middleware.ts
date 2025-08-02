@@ -6,6 +6,7 @@ declare module 'express-serve-static-core' {
         success: <T>(data: T, meta?: any) => Response;
         fail: (code: string, message: string, statusCode?: number) => Response;
         internalServerError: (message: string) => Response;
+        noStudentId: () => Response;
     }
 }
 
@@ -40,6 +41,15 @@ export const responseExtender = (
             error: { code: "INTERNAL_SERVER_ERROR", message },
         };
         return res.status(500).json(body);
+    }
+
+    res.noStudentId = () => {
+        const body: ApiError = {
+            success: false,
+            data: null,
+            error: { code: "NO_SID", message: "Authentication error: Student ID is missing." }
+        }
+        return res.status(401).json(body)
     }
 
     next();
