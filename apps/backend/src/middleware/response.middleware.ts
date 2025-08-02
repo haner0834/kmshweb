@@ -15,14 +15,14 @@ export const responseExtender = (
     res: Response,
     next: NextFunction
 ) => {
-    res.success = <T>(data: T, meta?: any) => {
+    res.success = <T>(data: T, meta?: any, statusCode = 200) => {
         const body: ApiSuccess<T> = {
             success: true,
             data,
             meta,
             error: null,
         };
-        return res.status(200).json(body);
+        return res.status(statusCode).json(body);
     };
 
     res.fail = (code: string, message: string, statusCode = 400) => {
