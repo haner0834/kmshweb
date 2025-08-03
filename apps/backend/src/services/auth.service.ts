@@ -6,13 +6,14 @@ import { StudentPayload, Tokens, DeviceInfo } from "../types/auth.types"
 import * as cryptoUtil from "../utils/crypto.utils"
 import { notifyOtherTrustedDevices } from "./notification.service"
 import { loginStudentAccount, getStudentDataFromOldSite } from "./student.service"
+import { AppError, AuthError, InternalError, NotFoundError, PermissionError } from "../types/error.types"
 
-
-export class AuthError extends Error {
-    constructor(message: string) {
-        super(message)
-        this.name = "AuthError"
-    }
+export const checkIfStudentExist = async (studentId: string): Promise<boolean> => {
+    const exist = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { id: true }
+    })
+    return !!exist
 }
 
 /**
@@ -28,7 +29,7 @@ export class AuthError extends Error {
 export const register = async (sid: string, password: string): Promise<Student> => {
     const existingStudent = await prisma.student.findUnique({ where: { id: sid } })
     if (existingStudent) {
-        throw new AuthError("This accound has been registered")
+        throw new AuthError("ACCOUNT_REGISTERED", "This accound has been registered", 409)
     }
 
     loginStudentAccount(sid, password)
@@ -106,16 +107,16 @@ export const login = async (
     const student = await prisma.student.findUnique({ where: { id } })
 
     if (!student) {
-        throw new Error("Wrong ID or password")
+        throw new AuthError("WRONG_ID_PASSWORD", "Wrong ID or password", 401)
     }
 
     const uek = cryptoUtil.decryptUek(Buffer.from(student.encryptedUek))
     if (!uek) {
-        throw new Error("Fatal Error: Couldn't decrypt UEK")
+        throw new InternalError("Couldn't decrypt UEK")
     }
     const decryptedPassword = cryptoUtil.decryptWithUek(Buffer.from(student.password), uek)
     if (decryptedPassword !== password) {
-        throw new Error("Wrong ID or password")
+        throw new AuthError("WRONG_ID_PASSWORD", "Wrong ID or password", 401)
     }
 
     const payload: StudentPayload = {
@@ -128,7 +129,7 @@ export const login = async (
     const hashedToken = await cryptoUtil.hashRefreshToken(tokens.refreshToken)
     const verifiedToken = verifyRefreshToken(tokens.refreshToken)
     if (!verifiedToken?.exp) {
-        throw new Error("Couldn't generate valid token")
+        throw new InternalError("Couldn't generate valid token")
     }
     const expiresAt = new Date(verifiedToken.exp * 1000)
 
@@ -206,6 +207,21 @@ export const login = async (
     return tokens
 }
 
+export const wrappedLogin = async (
+    studentId: string,
+    password: string,
+    trustDevice: boolean,
+    deviceInfo: DeviceInfo,
+    ipAddress: string,
+    userAgent: string
+) => {
+    if (await checkIfStudentExist(studentId)) {
+        login(studentId, password, trustDevice, deviceInfo, ipAddress, userAgent)
+    } else {
+        register(studentId, password)
+    }
+}
+
 /**
  * Refreshes JWT tokens using a valid refresh token.
  * @param oldRefreshToken The refresh token to verify and rotate.
@@ -215,7 +231,7 @@ export const login = async (
 export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
     const verifiedPayload = verifyRefreshToken(oldRefreshToken)
     if (!verifiedPayload?.sub) {
-        throw new AuthError("Invalid or expired refresh token")
+        throw new AuthError("INVALID_REFRESH", "Invalid or expired refresh token", 401)
     }
     const studentId = verifiedPayload.sub
 
@@ -234,12 +250,12 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
         if (dbTokenRecord) {
             await prisma.refreshToken.delete({ where: { id: dbTokenRecord.id } })
         }
-        throw new AuthError('Refresh Token expired or not exist')
+        throw new AuthError("INVALID_REFRESH", "Refresh Token expired or not exist", 401)
     }
 
     const student = await prisma.student.findUnique({ where: { id: dbTokenRecord.studentId } })
     if (!student) {
-        throw new AuthError("Couldn't find related student")
+        throw new NotFoundError("Couldn't find related student")
     }
 
     const studentPayload: StudentPayload = { id: student.id, name: student.name, classId: student.classId }
@@ -247,7 +263,7 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
     const newHashedToken = await cryptoUtil.hashRefreshToken(newTokens.refreshToken)
     const newVerifiedToken = verifyRefreshToken(newTokens.refreshToken)
     if (!newVerifiedToken?.exp) {
-        throw new AuthError("Couldn't generate valid token")
+        throw new InternalError("Couldn't generate valid token")
     }
 
     const newExpiresAt = new Date(newVerifiedToken.exp * 1000);
@@ -303,12 +319,12 @@ export const forceLogout = async (actorStudentId: string, deviceToLogoutId: stri
     })
 
     if (!deviceToLogout) {
-        throw new AuthError("Couldn't find related device.")
+        throw new NotFoundError("Couldn't find related device.")
     }
 
     // Security Check: Ensure the user trying to log out a device owns that device.
     if (deviceToLogout.student.id !== actorStudentId) {
-        throw new AuthError("Insufficient permissions to log out of a device that does not belong to you.")
+        throw new PermissionError("Insufficient permissions to log out of a device that does not belong to you.")
     }
 
     await prisma.$transaction(async (tx) => {

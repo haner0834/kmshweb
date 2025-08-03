@@ -1,5 +1,6 @@
 import { Exam, Subject, ExamType, SubjectType, SemesterTerm } from "@prisma/client";
 import * as cheerio from "cheerio";
+import { InternalError } from "../../types/error.types";
 
 // Helper interface for tracking column indices for each exam header.
 interface ExamHeaderInfo {
@@ -143,7 +144,7 @@ export const extractRocYear = (semesterName: string): number => {
 export const extractSemesterTerm = (semesterName: string): SemesterTerm => {
     if (semesterName.includes("第一學期")) return "first"
     if (semesterName.includes("第二學期")) return "second"
-    throw new Error("Unknown semester term")
+    throw new InternalError("Unknown semester term")
 }
 
 /**

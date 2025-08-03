@@ -10,7 +10,7 @@ import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
 import { getLoginCookieFromRedis, setLoginCookieToRedis } from "../utils/redis.utils";
 import { SemesterWithDetails } from "../types/crawler.senior.types";
 import { DisciplinaryEventDTO, extractStudentName, parseStudentDisciplinaryPage } from "./parser.senior/disciplinarypage.service";
-import { AuthError } from "./auth.service";
+import { BadRequestError, InternalError, NotFoundError, PermissionError } from "../types/error.types";
 
 /**
  * Get login cookie from Redis if exist, otherwise re-login to the original website and get session cookie.
@@ -28,13 +28,13 @@ export const getLoginCookie = async (studentId: string): Promise<string> => {
                 encryptedUek: true
             }
         })
-        if (!secureData) { throw new Error("Couldn't find student.") }
+        if (!secureData) { throw new NotFoundError("STUDENT", "Student ID not found in database.") }
 
         const uek = decryptUek(Buffer.from(secureData.encryptedUek))
-        if (!uek) { throw new Error("Failed to decrypt User Encryption Key (UEK).") }
+        if (!uek) { throw new InternalError("Failed to decrypt User Encryption Key (UEK).") }
 
         const password = decryptWithUek(Buffer.from(secureData.password), uek)
-        if (!password) { throw new Error("Failed to decrypt password.") }
+        if (!password) { throw new InternalError("Failed to decrypt password with User Encryption Key (UEK).") }
 
         const newCookie = await seniorSystem.loginAndGetCookie({ sid: studentId, password })
         await seniorSystem.initializeSession(newCookie)
@@ -69,7 +69,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
         } else if (sid.length === JUNIOR_SID_LENGTH) {
             // Login junior system
         } else {
-            throw new Error("Invalid sid format")
+            throw new BadRequestError("Invalid student ID format.")
         }
     } catch (error) {
         if (error instanceof seniorSystem.SeniorLoginError) {
@@ -86,7 +86,7 @@ export const getStudentDataFromOldSite = async (sid: string, password: string): 
         const profileContent = await seniorSystem.getStudentProfile(cookie)
         const parsedProfile = parseProfile(profileContent)
 
-        if (!parsedProfile) throw new Error("Failed to get profile.")
+        if (!parsedProfile) throw new InternalError("Failed to parse profile.")
 
         parsedProfile["sid"] = sid
 
@@ -174,19 +174,19 @@ export const updateStudentProfileFromOldSite = async (sid: string): Promise<Stud
     });
 
     if (!secureData) {
-        throw new Error(`Student with ID ${sid} not found in the database.`);
+        throw new NotFoundError(`Student with ID ${sid} not found in the database.`);
     }
     if (!secureData.encryptedUek || !secureData.password) {
-        throw new Error("Missing encrypted UEK or password for decryption.");
+        throw new InternalError("Missing encrypted UEK or password for decryption.");
     }
 
     const uek = decryptUek(Buffer.from(secureData.encryptedUek));
     if (!uek) {
-        throw new Error("Failed to decrypt User Encryption Key (UEK).");
+        throw new InternalError("Failed to decrypt User Encryption Key (UEK).");
     }
     const plaintextPassword = decryptWithUek(Buffer.from(secureData.password), uek);
     if (!plaintextPassword) {
-        throw new Error("Failed to decrypt password using the UEK.");
+        throw new InternalError("Failed to decrypt password with UEK.");
     }
 
     // Assuming studentService.getStudentDataFromOldSite is already defined
@@ -341,7 +341,7 @@ export const getExamById = async (studentId: string, id: string): Promise<Exam |
     })
 
     if (exam?.semester.studentId !== studentId) {
-        throw new AuthError("Unauthorized access. Permission denied.")
+        throw new PermissionError("Unauthorized access. Permission denied.")
     }
     const { semester, ...pureExam } = exam
     return pureExam
@@ -355,14 +355,13 @@ export const getCurrentSemesterAndUpdate = async (studentId: string): Promise<Se
             encryptedUek: true
         }
     })
-    if (!secureData) { throw new Error("Couldn't find student.") }
+    if (!secureData) { throw new NotFoundError(`Student with ID ${studentId} not found in database.`) }
 
     const uek = decryptUek(Buffer.from(secureData.encryptedUek))
-    if (!uek) { throw new Error("Failed to decrypt User Encryption Key (UEK).") }
+    if (!uek) { throw new InternalError("Failed to decrypt User Encryption Key (UEK).") }
 
     const password = decryptWithUek(Buffer.from(secureData.password), uek)
-    if (!password) { throw new Error("Failed to decrypt password.") }
-
+    if (!password) { throw new InternalError("Failed to decrypt password.") }
 
     const studentLevel = getStudentLevel(studentId.length)
     if (studentLevel === "senior") {
@@ -371,7 +370,7 @@ export const getCurrentSemesterAndUpdate = async (studentId: string): Promise<Se
         throw new Error("Function not implemented.")
     }
 
-    throw new Error("Unknown student ID format.")
+    throw new BadRequestError("Unknown student ID format.")
 }
 
 export const getSemesterById = async (studentId: string, id: string): Promise<Semester | null> => {
@@ -388,7 +387,7 @@ export const getSemesterById = async (studentId: string, id: string): Promise<Se
     })
 
     if (semester?.studentId !== studentId) {
-        throw new Error("No permission")
+        throw new PermissionError("Unauthorized: No permission to access the semester.")
     }
 
     return semester
@@ -487,7 +486,7 @@ export const updateDisplinary = async (studentId: string): Promise<DisciplinaryE
             where: { id: studentId },
             include: { disciplinaryEvents: true }
         })
-        if (!student) throw new Error("No student found.")
+        if (!student) throw new NotFoundError(`Student with ID ${studentId} not found in database.`)
 
         // there're 3 types of events: 
         // 1. to create
