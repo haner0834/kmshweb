@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import "./App.css";
 import Navbar from "./widgets/Navbar";
 import Home from "./pages/Home";
@@ -9,18 +9,52 @@ import ExamScore from "./pages/ExamScore";
 import SemestersListing from "./pages/SemestersListing";
 import Login from "./pages/Login";
 import Disciplinary from "./pages/Disciplinary";
+import ProtectedRoute from "./auth/ProtectedRoute";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Navbar />}>
         <Route index element={<Root />} />
-        <Route path="home" element={<Home />} />
+
         <Route path="intro" element={<Intro />} />
-        <Route path="examscore" element={<ExamScore />} />
-        <Route path="semesters" element={<SemestersListing />} />
+
         <Route path="login" element={<Login />} />
-        <Route path="disciplinary" element={<Disciplinary />} />
+
+        <Route
+          path="home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="examscore"
+          element={
+            <ProtectedRoute>
+              <ExamScore />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="semesters"
+          element={
+            <ProtectedRoute>
+              <SemestersListing />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="disciplinary"
+          element={
+            <ProtectedRoute>
+              <Disciplinary />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="error/">
           <Route path="redirectfailed" element={<RedirectFailed />} />
