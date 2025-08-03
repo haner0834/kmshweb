@@ -4,12 +4,13 @@ import React, {
   useState,
   useRef,
   useEffect,
+  type ReactNode,
 } from "react";
 import { useDevice } from "./DeviceContext";
 
 type ModalButtonRole = "primary" | "error" | "info" | "default";
 const getStyle = (role: ModalButtonRole) => {
-  if (role === "default") return "btn";
+  if (role === "default") return "";
   return "btn-" + role;
 };
 
@@ -25,6 +26,7 @@ type ModalOptions = {
   description?: string;
   showDismissButton?: boolean;
   buttons?: ModalButton[];
+  icon?: ReactNode;
 };
 
 type ModalContextType = {
@@ -75,8 +77,8 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
 
       <dialog ref={modalRef} className="modal">
         <div
-          className={`bg-base-100 p-6 min-w-xs ${
-            isMobile ? "text-center" : ""
+          className={`bg-base-100 m-8 p-6 ${
+            isMobile ? "text-center min-w-xs" : "min-w-lg"
           } rounded-2xl max-w-120 shadow-lg transition-all duration-300 origin-center ${
             isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
@@ -92,6 +94,8 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
             )}
           </form>
 
+          <div className="mb-4 flex justify-center">{modalOptions.icon}</div>
+
           {modalOptions.title && (
             <h3 className={`font-bold ${!isMobile ? "text-lg" : ""}`}>
               {modalOptions.title}
@@ -99,7 +103,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
           )}
 
           {modalOptions.description && (
-            <p className={`py-4 ${isMobile ? "opacity-50" : ""}`}>
+            <p className={`py-4 w-full ${isMobile ? "opacity-50" : ""}`}>
               {modalOptions.description}
             </p>
           )}
