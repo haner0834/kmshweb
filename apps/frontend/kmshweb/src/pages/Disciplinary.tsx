@@ -9,7 +9,6 @@ import Star from "@shared/icons/star.svg?react";
 import Medal from "@shared/icons/medal.svg?react";
 import AlertTriangle from "@shared/icons/triangle_alert.svg?react";
 import AlertCircle from "@shared/icons/circle_alert.svg?react";
-import { useNavigate } from "react-router-dom";
 
 const disciplinaryEvents: DisciplinaryEvent[] = [
   //   {
@@ -104,7 +103,6 @@ const formatDate = (isoString: string) => {
 const Disciplinary = () => {
   const { setNavbarButtonsByType } = useNavbarButtons();
   const [events, setEvents] = useState<Record<string, DisciplinaryEvent[]>>({});
-  const navigate = useNavigate();
 
   const splitEvents = (
     events: DisciplinaryEvent[]
