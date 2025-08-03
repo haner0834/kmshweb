@@ -106,7 +106,7 @@ const Home = () => {
           ))}
         </div>
 
-        <ul className="list bg-base-100 rounded-box shadow-md mx-8">
+        <ul className="list bg-base-100 rounded-box shadow-md mx-4">
           <li className="p-4 pb-2 text-xs opacity-60 tracking-wide uppercase">
             Calendar
           </li>
