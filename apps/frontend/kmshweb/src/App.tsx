@@ -15,7 +15,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Navbar />}>
         <Route index element={<Root />} />
-        <Route path="home" element={<Home />}></Route>
+        <Route path="home" element={<Home />} />
         <Route path="intro" element={<Intro />} />
         <Route path="examscore" element={<ExamScore />} />
         <Route path="semesters" element={<SemestersListing />} />
