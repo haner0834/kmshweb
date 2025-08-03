@@ -239,6 +239,7 @@ export const getExamByNameInCurrentSemesterHandler: AuthHandler<Exam[]> = async 
             res.fail("EXAM_NOT_FOUND", `Exam with name '${examName}' not found in the current semester.`, 404)
             return;
         }
+        res.success(foundExam)
     } catch (error) {
         if (error instanceof AppError) {
             logger.error({
