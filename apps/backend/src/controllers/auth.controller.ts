@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
 import { AppError, AuthError } from '../types/error.types';
-import { AuthRequest, LoginRequestBody, RefreshRequestBody } from '../types/auth.types';
+import { AuthRequest, LoginRequestBody, RefreshRequestBody, Tokens } from '../types/auth.types';
 import { DeviceType } from '@prisma/client';
 import { logger } from '../utils/logger.utils';
 import { AuthHandler, TypedResponse } from '../types/api.types';
@@ -12,6 +12,8 @@ const refreshTokenCookieOptions = {
     sameSite: 'strict' as const,
     path: '/api/auth'
 }
+
+type RegisterResponse = { id: string, name: string }
 
 /**
  * Handles user registration.
@@ -100,6 +102,23 @@ export const loginHandler = async (req: Request, res: TypedResponse<{ accessToke
         res.internalServerError("An unexpected error occurred while login.")
     }
 }
+
+type LoginOrRegisterResponse = Tokens | RegisterResponse
+
+export const wrappedLoginHandler = async (req: Request, res: TypedResponse<LoginOrRegisterResponse>) => {
+    const { id, password } = req.body
+    if (!id || !password) {
+        res.fail("MISSING_ID_PASSWORD", "Missing student ID or password in the request body.")
+        return
+    }
+
+    if (await authService.checkIfStudentExist(id)) {
+        await loginHandler(req, res)
+    } else {
+        await registerHandler(req, res)
+    }
+}
+
 
 /**
  * Handles refreshing of access tokens using a refresh token.

@@ -8,6 +8,14 @@ import { notifyOtherTrustedDevices } from "./notification.service"
 import { loginStudentAccount, getStudentDataFromOldSite } from "./student.service"
 import { AppError, AuthError, InternalError, NotFoundError, PermissionError } from "../types/error.types"
 
+export const checkIfStudentExist = async (studentId: string): Promise<boolean> => {
+    const exist = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { id: true }
+    })
+    return !!exist
+}
+
 /**
  * Register a new student account.
  * 
@@ -197,6 +205,21 @@ export const login = async (
     }
 
     return tokens
+}
+
+export const wrappedLogin = async (
+    studentId: string,
+    password: string,
+    trustDevice: boolean,
+    deviceInfo: DeviceInfo,
+    ipAddress: string,
+    userAgent: string
+) => {
+    if (await checkIfStudentExist(studentId)) {
+        login(studentId, password, trustDevice, deviceInfo, ipAddress, userAgent)
+    } else {
+        register(studentId, password)
+    }
 }
 
 /**
