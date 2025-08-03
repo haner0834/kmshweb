@@ -94,7 +94,7 @@ const Home = () => {
   return (
     <div className="w-screen min-h-screen flex justify-center bg-base-300">
       <div className={`${isMobile ? "w-screen" : ""} pb-8`}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-20 p-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-20 p-4">
           {CARD_ITEMS.map((item) => (
             // TODO: Add key to the card
             <Card
@@ -106,7 +106,7 @@ const Home = () => {
           ))}
         </div>
 
-        <ul className="list bg-base-100 rounded-box shadow-md mx-8">
+        <ul className="list bg-base-100 rounded-box shadow-md mx-4">
           <li className="p-4 pb-2 text-xs opacity-60 tracking-wide uppercase">
             Calendar
           </li>

@@ -8,6 +8,7 @@ import Intro from "./pages/Intro";
 import ExamScore from "./pages/ExamScore";
 import SemestersListing from "./pages/SemestersListing";
 import Login from "./pages/Login";
+import Disciplinary from "./pages/Disciplinary";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="examscore" element={<ExamScore />} />
         <Route path="semesters" element={<SemestersListing />} />
         <Route path="login" element={<Login />} />
+        <Route path="disciplinary" element={<Disciplinary />} />
 
         <Route path="error/">
           <Route path="redirectfailed" element={<RedirectFailed />} />
