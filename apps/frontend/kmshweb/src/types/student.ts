@@ -29,6 +29,23 @@ export interface Notification {
   isRead: boolean;
 }
 
+export type DisciplinaryLevel =
+  | "commendation"
+  | "minorMerit"
+  | "majorMerit"
+  | "warning"
+  | "minorDemerit"
+  | "majorDemerit";
+
+export interface DisciplinaryEvent {
+  studentId: string;
+  incidentDate: string;
+  approvalDate: string;
+  reason: string;
+  type: DisciplinaryLevel;
+  count: number;
+}
+
 const SubjectType = {
   nationalMandatory: {
     tag: "nationalMandatory",
