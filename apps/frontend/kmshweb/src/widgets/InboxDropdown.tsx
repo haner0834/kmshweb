@@ -1,7 +1,10 @@
 import { Suspense, useEffect, useState } from "react";
-import logo from "../assets/react.svg";
 import { type Notification, type NotificationIcon } from "../types/student";
 import { useAuthFetch } from "../auth/useAuthFetch";
+import TextFile from "@shared/icons/file_text.svg?react";
+import ShieldAlert from "@shared/icons/shield-alert.svg?react";
+import Bus from "@shared/icons/bus-front.svg?react";
+import Award from "@shared/icons/award.svg?react";
 
 export const NotificationInboxIcon = ({
   unreadCount,
@@ -44,21 +47,35 @@ const InboxDropdownButtonPlaceholder = () => {
 
 const getIcon = (icon: NotificationIcon) => {
   // TODO: Return specific icon for different input
-  return logo;
+  switch (icon) {
+    case "score":
+      return <TextFile className="w-6 h-6" />;
+    case "auth":
+      return <ShieldAlert className="w-6 h-6 stroke-error" />;
+    case "bus":
+      return <Bus className="w-6 h-6" />;
+    case "disciplinary":
+      return <Award />;
+  }
 };
 
 const NotificationItem = ({ notification }: { notification: Notification }) => {
   return (
     <li>
       <div className="flex items-center justify-between w-full px-2 py-1 my-1">
-        <img src={getIcon(notification.icon)} className="w-5 h-5" />
+        {getIcon(notification.icon)}
 
-        <a href={notification.path} className="flex-1">
+        <a href={notification.path} className="w-full">
           {notification.title}
         </a>
 
         {!notification.isRead && (
-          <span className="status status-primary ml-2"></span>
+          // status-error status-primary
+          <span
+            className={`status status-${
+              notification.type === "warning" ? "error" : "primary"
+            } me-1`}
+          ></span>
         )}
       </div>
     </li>
@@ -105,7 +122,7 @@ const InboxDropdownContent = () => {
       </div>
       <ul
         tabIndex={0}
-        className="dropdown-content block menu bg-base-100 rounded-box z-1 w-70 max-h-50 overflow-y-scroll p-2 shadow-md"
+        className="dropdown-content block menu bg-base-100 rounded-box z-1 w-70 max-h-50 overflow-y-scroll p-2 shadow-md hide-scrollbar"
       >
         <p className="uppercase mx-2 text-xs opacity-50 mb-1.5">
           notifications
