@@ -1,24 +1,38 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { useModal } from "../widgets/ModalContext";
+import { getErrorMessage } from "../utils/errors";
 
 const Root = () => {
   const navigate = useNavigate();
-  const { refreshAccessToken } = useAuth();
+  const { refreshAccessToken, accessToken } = useAuth();
+  const { showModal } = useModal();
   // Get whether the device has logged in
   useEffect(() => {
     const checkLoginAndNavigate = async () => {
       try {
         const isLoggedIn = localStorage.getItem("isLoggedIn");
         if (isLoggedIn === "true") {
-          await refreshAccessToken();
+          if (!accessToken) {
+            await refreshAccessToken();
+          }
           navigate("/home");
         } else {
           navigate("/intro");
         }
       } catch (error) {
         console.error("Error refreshing access token:", error);
-        navigate("/error/redirectfailed");
+        navigate("/login");
+        showModal({
+          title: "登入已過期",
+          description: getErrorMessage("EXPIRED_LOGIN"),
+          buttons: [
+            {
+              label: "OK",
+            },
+          ],
+        });
       }
     };
 

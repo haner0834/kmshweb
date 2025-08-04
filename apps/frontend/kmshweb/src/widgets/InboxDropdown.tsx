@@ -1,7 +1,7 @@
-import { Suspense, use, useState } from "react";
-import { useAuth } from "../auth/AuthContext";
+import { Suspense, useEffect, useState } from "react";
 import logo from "../assets/react.svg";
 import { type Notification, type NotificationIcon } from "../types/student";
+import { useAuthFetch } from "../auth/useAuthFetch";
 
 export const NotificationInboxIcon = ({
   unreadCount,
@@ -65,54 +65,43 @@ const NotificationItem = ({ notification }: { notification: Notification }) => {
   );
 };
 
-const getUnreadNotificationCount = async (
-  accessToken: string
-): Promise<number> => {
-  const res = await fetch("/api/student/notifications/count?role=unread", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const result = await res.json();
-  return result.data;
-};
-
-const getFirst5Notifications = async (
-  accessToken: string,
-  currentNotifications: Notification[],
-  setNotifications: (n: Notification[]) => void
-) => {
-  const res = await fetch(
-    "kmshweb.com/api/student/notifications?page=1&pagesize=5",
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-  const result = await res.json();
-  setNotifications([...currentNotifications, ...result.data]);
-};
-
 const InboxDropdownContent = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { accessToken } = useAuth();
+  const { authedFetch } = useAuthFetch();
+  const [page, setPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number | null>();
 
-  if (!accessToken) {
-    return <InboxDropdownButtonPlaceholder />;
-  }
+  const updateNotifications = async () => {
+    if (!isLastPage) {
+      const json = await authedFetch(
+        `http://localhost:3000/api/student/notifications?page=${page}&pagesize=10`
+      );
+      setNotifications([...notifications, ...json.data]);
+      if (json.meta.page < json.meta.totalPages) {
+        // There are more pages
+        setPage((prev) => prev + 1);
+      } else {
+        setIsLastPage(true);
+      }
+    }
+  };
 
-  const unreadCount = use(getUnreadNotificationCount(accessToken));
+  useEffect(() => {
+    const a = async () => {
+      const json = await authedFetch(
+        "http://localhost:3000/api/student/notifications/count?role=unread"
+      );
+      console.log(json);
+      setUnreadCount(json.data);
+    };
+    a();
+  }, []);
 
   return (
-    <div
-      onClick={() =>
-        getFirst5Notifications(accessToken, notifications, setNotifications)
-      }
-      className="dropdown dropdown-end"
-    >
+    <div className="dropdown dropdown-end" onFocus={updateNotifications}>
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-        <NotificationInboxIcon unreadCount={unreadCount} />
+        <NotificationInboxIcon unreadCount={unreadCount ?? 0} />
       </div>
       <ul
         tabIndex={0}

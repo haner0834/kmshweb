@@ -14,16 +14,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshAccessToken = async (): Promise<string> => {
     try {
-      const res = await fetch("http:localhost:3000/api/auth/refresh", {
+      const res = await fetch("http://localhost:3000/api/auth/refresh", {
         method: "POST",
         credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-      const data = await res.json();
+      const json = await res.json();
 
-      if (!data.accessToken) throw new Error("No access token returned");
+      if (!json.data.accessToken) throw new Error("No access token returned");
 
-      setAccessToken(data.accessToken);
-      return data.accessToken;
+      setAccessToken(json.data.accessToken);
+      return json.data.accessToken;
     } catch (err) {
       setAccessToken(null);
       throw new Error("Unable to refresh");

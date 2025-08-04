@@ -1,4 +1,4 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { useEffect, type ReactNode } from "react";
 import Calendar from "@shared/icons/calendar_clock.svg?react";
@@ -7,33 +7,46 @@ import { useModal } from "../widgets/ModalContext";
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { setNavbarButtons } = useNavbarButtons();
-  const { accessToken } = useAuth();
+  const { accessToken, refreshAccessToken } = useAuth();
   const navigate = useNavigate();
   const { showModal } = useModal();
 
-  useEffect(() => {
-    if (!accessToken) {
-      setNavbarButtons([
-        {
-          placement: "center",
-          content: <p className="font-bold">ㄏㄚˋㄏㄚˋㄏㄚˋ</p>,
-        },
-      ]);
+  const setupErrorPage = () => {
+    setNavbarButtons([
+      {
+        placement: "center",
+        content: <p className="font-bold">ㄏㄚˋㄏㄚˋㄏㄚˋ</p>,
+      },
+    ]);
 
-      showModal({
-        title: "登入已過期",
-        description: "重新登入以繼續使用",
-        icon: <Calendar className="w-30 h-30" />,
-        buttons: [
-          {
-            label: "OK",
-            style: "btn-primary",
-            role: "primary",
-            onClick: () => navigate("/login"),
-          },
-        ],
-      });
-    }
+    showModal({
+      title: "登入已過期",
+      description: "重新登入以繼續使用",
+      icon: <Calendar className="w-30 h-30" />,
+      buttons: [
+        {
+          label: "OK",
+          style: "btn-primary",
+          role: "primary",
+          onClick: () => navigate("/login"),
+        },
+      ],
+    });
+  };
+
+  useEffect(() => {
+    const a = async () => {
+      try {
+        if (!accessToken) {
+          await refreshAccessToken();
+        }
+      } catch (error) {
+        setupErrorPage();
+        console.error("Failed to refresh access token.");
+      }
+    };
+
+    a();
   }, []);
 
   return accessToken ? (

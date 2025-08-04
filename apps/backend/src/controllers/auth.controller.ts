@@ -9,7 +9,7 @@ import { AuthHandler, TypedResponse } from '../types/api.types';
 const refreshTokenCookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict' as const,
+    sameSite: 'lax' as const,
     path: '/api/auth'
 }
 

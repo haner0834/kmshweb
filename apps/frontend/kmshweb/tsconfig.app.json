@@ -27,7 +27,7 @@
 
     "baseUrl": "src/*", // or "src" if all imports are from `src`
     "paths": {
-      "@shared/*": ["../../../../shared/*"],
+      "@shared/*": ["../../../../../shared/*"],
       "@assets/*": ["../assets/*"],
     }
   },
