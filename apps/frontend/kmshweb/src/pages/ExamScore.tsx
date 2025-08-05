@@ -435,30 +435,28 @@ const ExamScore = () => {
     const a = async () => {
       console.log("exam score 1");
       try {
-        const response = await authedFetch(
+        let response = await authedFetch(
           "http://localhost:3000/api/student/semesters/current?includeExams?true"
         );
 
         if (!response.success) {
           setIsFirstFetch(true);
-          const response = await authedFetch(
+          const newResponse = await authedFetch(
             "http://localhost:3000/api/student/semesters/current?source=origin"
           );
 
-          if (!response.success) {
+          if (!newResponse.success) {
             console.error(response);
           }
-
-          setSemester(response.data);
-
-          const newParams = new URLSearchParams(searchParams);
-          newParams.set("examid", response.data.exams[0]?.id ?? "");
-          setSearchParams(newParams, { replace: true });
-
-          examId = response.data.exams[0]?.id ?? "";
+          response = newResponse;
         }
 
-        setSemester(response.data);
+        let semester: Semester = response.data;
+        const [title, subtitle] = (response.data.name as string).split(" ");
+        semester.title = title;
+        semester.subtitle = subtitle;
+
+        setSemester(semester);
 
         const newParams = new URLSearchParams(searchParams);
         newParams.set("examid", response.data.exams[0]?.id ?? "");
@@ -496,6 +494,7 @@ const ExamScore = () => {
   }, [searchParams]);
 
   useEffect(() => {
+    if (!semester) return;
     const baseButtons: NavbarButton[] = ([] as NavbarButtonType[])
       .map((type) => NavbarButtonTypeMap.get(type))
       .filter(Boolean) as NavbarButton[];
@@ -526,11 +525,13 @@ const ExamScore = () => {
       order: 0,
       id: "semester_title",
       // TODO: Use real semester got from backend
-      content: <SemesterTitle title="一一四學年" subtitle="第一學期" />,
+      content: (
+        <SemesterTitle title={semester.title} subtitle={semester.subtitle} />
+      ),
     };
 
     setNavbarButtons([...baseButtons, menuToggleButton, backButton, title]);
-  }, []);
+  }, [semester]);
 
   return (
     <div className="w-screen flex join-vertical min-h-screen justify-start pt-18 bg-base-300">
