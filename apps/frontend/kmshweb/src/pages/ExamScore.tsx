@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   exams,
   getSubjectTypeName,
   type Exam,
+  type Semester,
   type Subject,
 } from "../types/student";
 import "../App.css";
@@ -21,6 +22,7 @@ import { useDevice } from "../widgets/DeviceContext";
 import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
 import BackButton from "../widgets/BackButton";
+import { useAuthFetch } from "../auth/useAuthFetch";
 
 interface ExamTabsProps {
   exams: Exam[];
@@ -38,6 +40,10 @@ const getDisplayDataName = (type: DisplayData) => {
   return DisplayDataMap[type];
 };
 
+const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 const ExamTabs: React.FC<ExamTabsProps> = ({ exams }) => {
   const [selectedExamId, setSelectedExamId] = useState<string>("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -49,13 +55,15 @@ const ExamTabs: React.FC<ExamTabsProps> = ({ exams }) => {
   };
 
   useEffect(() => {
+    if (!exams) return;
+    console.log("exam tabs");
     const examId = searchParams.get("examid");
-    if (!examId) {
-      select(exams[0]?.id ?? "");
-    } else {
-      setSelectedExamId(examId);
+    if (examId) {
+      select(examId);
+    } else if (exams[0]?.id) {
+      select(exams[0]?.id);
     }
-  }, [searchParams]); // Occured everytime the query changed
+  }, [exams]);
 
   return (
     <div className="overflow-x-auto hide-scrollbar bg-base-100">
@@ -123,15 +131,21 @@ const SubjectsDisplay = ({
   // get config from localStorage
 
   useEffect(() => {
-    // iterate through all subjects, categorize them
-    const map = new Map<string, Subject[]>();
-    for (const subject of subjects) {
-      map.set(getSubjectTypeName(subject.type), [
-        ...(map.get(getSubjectTypeName(subject.type)) ?? []),
-        subject,
-      ]);
-    }
-    setCategorizedSubjects(map);
+    const a = async () => {
+      // NOTE: The `sleep` here are used to prevent reading empty `subject.type`.
+      await sleep(100);
+      // iterate through all subjects, categorize them
+      const map = new Map<string, Subject[]>();
+      for (const subject of subjects) {
+        const typeName = getSubjectTypeName(
+          subject?.type ?? "nationalMandatory"
+        );
+        map.set(typeName, [...(map.get(typeName) ?? []), subject]);
+      }
+      setCategorizedSubjects(map);
+    };
+
+    a();
   }, [searchParams]);
 
   return (
@@ -341,14 +355,12 @@ const ExamScore = () => {
   const { setNavbarButtons } = useNavbarButtons();
   const [isSheetOn, setIsSheetOn] = useState(false);
   const [displayData, setDisplayData] = useState<DisplayData>("score");
+  const { authedFetch } = useAuthFetch();
+  const [isFirstFetch, setIsFirstFetch] = useState(false);
+  const [exam, setExam] = useState<Exam | null>();
+  const [semester, setSemester] = useState<Semester | null>();
 
-  const examId = searchParams.get("examid");
-  const getExam = (): Exam | undefined => {
-    // TODO: Get this from kmshweb.com/api/student/exams?id=${examId}
-    return exams.find((exam) => exam.id === examId);
-  };
-
-  const exam = getExam();
+  let examId = searchParams.get("examid");
 
   const showAlert = () => {
     const isXSSAttack = examId?.includes("<") || examId?.includes(">");
@@ -403,10 +415,67 @@ const ExamScore = () => {
   };
 
   useEffect(() => {
-    // If the exam id not specified, not to show the alert
-    if (!exam && examId) {
-      showAlert();
-    }
+    const a = async () => {
+      console.log("exam score 1");
+      try {
+        const response = await authedFetch(
+          "http://localhost:3000/api/student/semesters/current?includeExams?true"
+        );
+
+        if (!response.success) {
+          setIsFirstFetch(true);
+          const response = await authedFetch(
+            "http://localhost:3000/api/student/semesters/current?source=origin"
+          );
+
+          if (!response.success) {
+            console.error(response);
+          }
+
+          setSemester(response.data);
+
+          const newParams = new URLSearchParams(searchParams);
+          newParams.set("examid", response.data.exams[0]?.id ?? "");
+          setSearchParams(newParams, { replace: true });
+
+          examId = response.data.exams[0]?.id ?? "";
+        }
+
+        setSemester(response.data);
+
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set("examid", response.data.exams[0]?.id ?? "");
+        setSearchParams(newParams, { replace: true });
+
+        examId = response.data.exams[0]?.id ?? "";
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    a();
+  }, []);
+
+  useEffect(() => {
+    const examId = searchParams.get("examid");
+    if (!examId) return;
+    const a = async () => {
+      const examResponse = await authedFetch(
+        `http://localhost:3000/api/student/exams/${examId}`
+      );
+      if (!examResponse.success) {
+        console.error("Failed to load get exam.");
+      }
+      setExam(examResponse.data);
+      console.log(examResponse.data);
+
+      // If the exam id not specified, not to show the alert
+      if (!examResponse.data && examId) {
+        console.log(examId, examResponse.data);
+        showAlert();
+      }
+    };
+    a();
   }, [searchParams]);
 
   useEffect(() => {
@@ -446,11 +515,9 @@ const ExamScore = () => {
     setNavbarButtons([...baseButtons, menuToggleButton, backButton, title]);
   }, []);
 
-  // TODO: Then, fetch exams from kmshweb.com/api/student/semester/current/examlist
-
   return (
     <div className="w-screen flex join-vertical min-h-screen justify-start pt-18 bg-base-300">
-      <ExamTabs exams={exams} />
+      <ExamTabs exams={semester?.exams ?? []} />
 
       {exam && (
         <div className="mb-30 w-full flex flex-col items-center justify-center">
