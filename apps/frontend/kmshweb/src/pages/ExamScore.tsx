@@ -1,4 +1,4 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   exams,
   getSubjectTypeName,
@@ -106,11 +106,13 @@ const OptionalText = ({
   children: React.ReactNode;
 }) => {
   return (
-    <p
-      className={`me-2 ${!text ? "opacity-50 whitespace-nowrap text-xs" : ""}`}
+    <div
+      className={`me-2 flex items-center ${
+        !text ? "opacity-50 whitespace-nowrap text-xs" : ""
+      }`}
     >
       {!text ? "尚無資料" : children}
-    </p>
+    </div>
   );
 };
 
