@@ -150,6 +150,16 @@ const SubjectsDisplay = ({
     a();
   }, [searchParams]);
 
+  const formatDecimal = (number: number): { int: string; dec: string } => {
+    const [int, dec] = number
+      .toLocaleString("zh-TW", {
+        maximumFractionDigits: 3,
+        minimumFractionDigits: 3,
+      })
+      .split(".");
+    return { int, dec };
+  };
+
   return (
     <ul className="space-y-4">
       {[...categorizedSubjects.entries()].map(
@@ -186,7 +196,12 @@ const SubjectsDisplay = ({
                 {(!isMobile || displayData === "average") && (
                   <div className="basis-1/4 flex items-end justify-end">
                     <OptionalText text={subject.classAverage}>
-                      {subject.classAverage ?? 0}
+                      <div className="flex items-baseline">
+                        <p>{formatDecimal(subject.classAverage ?? 0).int}</p>
+                        <p className="opacity-50 text-sm ms-1">
+                          .{formatDecimal(subject.classAverage ?? 0).dec}
+                        </p>
+                      </div>
                     </OptionalText>
                   </div>
                 )}
