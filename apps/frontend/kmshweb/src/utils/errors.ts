@@ -1,0 +1,7 @@
+import errorMap from "@shared/errors/errorMessage.json";
+
+type ErrorCode = keyof typeof errorMap;
+
+export function getErrorMessage(code: ErrorCode): string {
+  return errorMap[code]?.message ?? "發生未知錯誤，請稍後再試";
+}

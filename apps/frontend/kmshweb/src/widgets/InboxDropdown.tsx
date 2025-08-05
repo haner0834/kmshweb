@@ -1,7 +1,10 @@
-import { Suspense, use, useState } from "react";
-import { useAuth } from "../auth/AuthContext";
-import logo from "../assets/react.svg";
+import { Suspense, useEffect, useState } from "react";
 import { type Notification, type NotificationIcon } from "../types/student";
+import { useAuthFetch } from "../auth/useAuthFetch";
+import TextFile from "@shared/icons/file_text.svg?react";
+import ShieldAlert from "@shared/icons/shield-alert.svg?react";
+import Bus from "@shared/icons/bus-front.svg?react";
+import Award from "@shared/icons/award.svg?react";
 
 export const NotificationInboxIcon = ({
   unreadCount,
@@ -44,79 +47,82 @@ const InboxDropdownButtonPlaceholder = () => {
 
 const getIcon = (icon: NotificationIcon) => {
   // TODO: Return specific icon for different input
-  return logo;
+  switch (icon) {
+    case "score":
+      return <TextFile className="w-6 h-6" />;
+    case "auth":
+      return <ShieldAlert className="w-6 h-6 stroke-error" />;
+    case "bus":
+      return <Bus className="w-6 h-6" />;
+    case "disciplinary":
+      return <Award />;
+  }
 };
 
 const NotificationItem = ({ notification }: { notification: Notification }) => {
   return (
     <li>
       <div className="flex items-center justify-between w-full px-2 py-1 my-1">
-        <img src={getIcon(notification.icon)} className="w-5 h-5" />
+        {getIcon(notification.icon)}
 
-        <a href={notification.path} className="flex-1">
+        <a href={notification.path} className="w-full">
           {notification.title}
         </a>
 
         {!notification.isRead && (
-          <span className="status status-primary ml-2"></span>
+          // status-error status-primary
+          <span
+            className={`status status-${
+              notification.type === "warning" ? "error" : "primary"
+            } me-1`}
+          ></span>
         )}
       </div>
     </li>
   );
 };
 
-const getUnreadNotificationCount = async (
-  accessToken: string
-): Promise<number> => {
-  const res = await fetch("/api/student/notifications/count?role=unread", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const result = await res.json();
-  return result.data;
-};
-
-const getFirst5Notifications = async (
-  accessToken: string,
-  currentNotifications: Notification[],
-  setNotifications: (n: Notification[]) => void
-) => {
-  const res = await fetch(
-    "kmshweb.com/api/student/notifications?page=1&pagesize=5",
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-  const result = await res.json();
-  setNotifications([...currentNotifications, ...result.data]);
-};
-
 const InboxDropdownContent = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { accessToken } = useAuth();
+  const { authedFetch } = useAuthFetch();
+  const [page, setPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number | null>();
 
-  if (!accessToken) {
-    return <InboxDropdownButtonPlaceholder />;
-  }
+  const updateNotifications = async () => {
+    if (!isLastPage) {
+      const json = await authedFetch(
+        `http://localhost:3000/api/student/notifications?page=${page}&pagesize=10`
+      );
+      setNotifications([...notifications, ...json.data]);
+      if (json.meta.page < json.meta.totalPages) {
+        // There are more pages
+        setPage((prev) => prev + 1);
+      } else {
+        setIsLastPage(true);
+      }
+    }
+  };
 
-  const unreadCount = use(getUnreadNotificationCount(accessToken));
+  useEffect(() => {
+    const a = async () => {
+      const json = await authedFetch(
+        "http://localhost:3000/api/student/notifications/count?role=unread"
+      );
+      console.log(json);
+      setUnreadCount(json.data);
+    };
+    a();
+  }, []);
 
   return (
-    <div
-      onClick={() =>
-        getFirst5Notifications(accessToken, notifications, setNotifications)
-      }
-      className="dropdown dropdown-end"
-    >
+    <div className="dropdown dropdown-end" onFocus={updateNotifications}>
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-        <NotificationInboxIcon unreadCount={unreadCount} />
+        <NotificationInboxIcon unreadCount={unreadCount ?? 0} />
       </div>
       <ul
         tabIndex={0}
-        className="dropdown-content block menu bg-base-100 rounded-box z-1 w-70 max-h-50 overflow-y-scroll p-2 shadow-md"
+        className="dropdown-content block menu bg-base-100 rounded-box z-1 w-70 max-h-50 overflow-y-scroll p-2 shadow-md hide-scrollbar"
       >
         <p className="uppercase mx-2 text-xs opacity-50 mb-1.5">
           notifications

@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useModal } from "../widgets/ModalContext";
 import { useNavigate } from "react-router-dom";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import { useAuthFetch } from "../auth/useAuthFetch";
 import type { LoginRequestBody } from "../types/auth";
 import { getClientDeviceId } from "../utils/device";
 import NavbarLogo from "../widgets/NavbarLogo";
 import Eye from "@shared/icons/eye.svg?react";
 import EyeSlash from "@shared/icons/eye_slash.svg?react";
+import { getErrorMessage } from "../utils/errors";
+import { useAuth } from "../auth/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,25 +17,17 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [wasSubmitted, setWasSubmitted] = useState(false);
   const { setNavbarButtonsByType } = useNavbarButtons();
-  const { authedFetch } = useAuthFetch();
   const [waiting, setWaiting] = useState(false);
   const [trustDevice, setTrustDevice] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { setAccessToken } = useAuth();
 
   const openModal = () => {
     showModal({
       showDismissButton: true,
       title: "你怎麼這也能忘",
       description: "密碼：身分證字號",
-    });
-  };
-
-  const openLoginFailedModal = () => {
-    showModal({
-      showDismissButton: true,
-      title: "登入失敗",
-      description: "檢查您的學號、密碼是否正確",
     });
   };
 
@@ -59,17 +52,42 @@ const Login = () => {
           type: "web",
         },
       };
-      const data = await authedFetch("kmshweb.com/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify(loginBody),
-      });
+      const response = await fetch(
+        "http://localhost:3000/api/auth/login/wrap",
+        {
+          credentials: "include",
+          method: "POST",
+          body: JSON.stringify(loginBody),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const success = !!data.accessToken;
+      const json = await response.json();
+
+      const success = json.success;
       if (!success) {
         setWaiting(false);
-        openLoginFailedModal();
+        showModal({
+          title: "登入失敗",
+          description: getErrorMessage(json.error.code),
+          buttons: [
+            {
+              label: "關閉",
+            },
+          ],
+        });
         return;
       }
+
+      console.log("Success!");
+      console.log(json);
+
+      const accessToken = json.data.accessToken;
+      setAccessToken(accessToken);
+
+      localStorage.setItem("isLoggedIn", "true");
 
       navigate("/home");
     } catch (error) {}
