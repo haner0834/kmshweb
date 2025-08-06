@@ -6,13 +6,27 @@ export type Grade =
   | "senior2"
   | "senior3";
 
+export type Gender = "male" | "female";
+
+export type EnrollmentStatus =
+  | "enrolled"
+  | "suspended"
+  | "graduated"
+  | "withdraw";
+
+export type Stream = "science" | "social" | "all" | "other";
+
 export interface Student {
-  id: string;
+  sid: string;
   name: string;
   grade: Grade;
-  birthDate: Date;
-  enrollmentDate: Date;
-  status: string;
+  birthDate: string;
+  enrollmentDate: string;
+  status: EnrollmentStatus;
+  gender: Gender;
+  stream: Stream;
+  classLabel: string;
+  classNumber: number;
   credential: string;
 }
 

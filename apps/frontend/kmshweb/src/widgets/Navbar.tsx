@@ -9,7 +9,8 @@ export type NavbarButtonType =
   | "inbox"
   | "navbarTitle"
   | "sidebarToggle"
-  | "back";
+  | "back"
+  | "profile";
 
 type NavbarButtonPlacement = "start" | "center" | "end";
 

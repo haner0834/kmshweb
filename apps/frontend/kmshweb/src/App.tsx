@@ -10,6 +10,7 @@ import SemestersListing from "./pages/SemestersListing";
 import Login from "./pages/Login";
 import Disciplinary from "./pages/Disciplinary";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -52,6 +53,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Disciplinary />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
