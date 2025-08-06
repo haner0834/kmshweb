@@ -273,7 +273,7 @@ export const getExamByIdHandler: AuthHandler<Exam> = async (req, res) => {
         if (error instanceof AppError) {
             logger.error({
                 service: "student-service",
-                action: "get exam by name in current semester",
+                action: "get exam by id in current semester",
                 error: error,
                 context: {
                     studentId,

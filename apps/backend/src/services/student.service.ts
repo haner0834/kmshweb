@@ -337,6 +337,11 @@ export const getExamById = async (studentId: string, id: string): Promise<Exam |
                     studentId: true,
                 },
             },
+            subjects: {
+                orderBy: {
+                    sortOrder: "asc"
+                }
+            }
         },
     })
 
