@@ -1,12 +1,14 @@
 import { useMediaQuery } from "react-responsive";
 import logo from "../assets/react.svg";
-import coffeeroll from "@shared/app_icons/coffee_roll.png";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
+import TextFile from "@shared/icons/file_text.svg?react";
+import Medal from "@shared/icons/medal.svg?react";
+import Bus from "@shared/icons/bus-front.svg?react";
 
 type CardProbs = {
-  img: string;
+  img: ReactNode;
   title: string;
   path: string;
 };
@@ -19,9 +21,9 @@ const CardForMobile = ({ img, title, path }: CardProbs) => {
   return (
     <div
       onClick={toPath}
-      className="bg-base-100 w-full shadow-sm h-20 rounded-xl flex justify-start items-center px-4 gap-4"
+      className="bg-base-100 w-full shadow-sm h-20 rounded-xl flex justify-center items-center px-4 gap-2"
     >
-      <img src={img} alt="" className="h-12 w-12 rounded-full" />
+      {img}
       <p className="font-semibold">{title}</p>
     </div>
   );
@@ -31,7 +33,8 @@ const CardForBigScreen = ({ img, title }: CardProbs) => {
   return (
     <div className="card bg-base-100 w-50 shadow-sm">
       <figure>
-        <img src={img} alt="Shoes" />
+        {/* <img src={img} alt="Shoes" /> */}
+        {img}
       </figure>
       <div className="card-body bg-neutral rounded-b-2xl">
         <h2 className="card-title text-base-100">{title}</h2>
@@ -52,8 +55,8 @@ const Card = ({ img, title, path }: CardProbs) => {
 
 const CARD_ITEMS: CardProbs[] = [
   {
-    img: coffeeroll,
-    title: "考試成績",
+    img: <TextFile className="text-amber-400" />,
+    title: "成績",
     path: "/examscore",
   },
   // {
@@ -67,7 +70,7 @@ const CARD_ITEMS: CardProbs[] = [
   //   path: "/examscore",
   // },
   {
-    img: coffeeroll,
+    img: <Medal className="" />,
     title: "獎懲",
     path: "/disciplinary",
   },
@@ -77,7 +80,7 @@ const CARD_ITEMS: CardProbs[] = [
   //   path: "/classschedule",
   // },
   {
-    img: coffeeroll,
+    img: <Bus className="text-purple-400" />,
     title: "車表",
     path: "/busschedule",
   },
