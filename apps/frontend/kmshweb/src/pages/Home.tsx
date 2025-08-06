@@ -88,7 +88,7 @@ const Home = () => {
   const { setNavbarButtonsByType } = useNavbarButtons();
 
   useEffect(() => {
-    setNavbarButtonsByType(["logo", "themeToggle", "inbox"]);
+    setNavbarButtonsByType(["logo", "themeToggle", "inbox", "profile"]);
   }, []);
 
   return (
