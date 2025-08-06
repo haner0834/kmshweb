@@ -31,7 +31,7 @@ interface ExamTabsProps {
 const DisplayDataMap = {
   score: "分數",
   ranking: "排名",
-  average: "平均",
+  average: "班平均",
 };
 
 type DisplayData = keyof typeof DisplayDataMap;
