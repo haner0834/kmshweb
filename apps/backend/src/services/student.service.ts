@@ -17,26 +17,31 @@ import { BadRequestError, InternalError, NotFoundError, PermissionError } from "
  * @param studentId Student ID.
  * @returns Cookie from Redis or original website.
  */
-export const getLoginCookie = async (studentId: string): Promise<string> => {
+export const getLoginCookie = async (studentId: string, password?: string): Promise<string> => {
     let cookie = await getLoginCookieFromRedis(studentId)
     if (!cookie) {
+        let userPassword = password
+
+        if (!userPassword) {
+            const secureData = await prisma.student.findUnique({
+                where: { id: studentId },
+                select: {
+                    password: true,
+                    encryptedUek: true
+                }
+            })
+            if (!secureData) { throw new NotFoundError("STUDENT", "Student ID not found in database.") }
+
+            const uek = decryptUek(Buffer.from(secureData.encryptedUek))
+            if (!uek) { throw new InternalError("Failed to decrypt User Encryption Key (UEK).") }
+
+            const plainPassword = decryptWithUek(Buffer.from(secureData.password), uek)
+            if (!plainPassword) { throw new InternalError("Failed to decrypt password with User Encryption Key (UEK).") }
+
+            userPassword = plainPassword
+        }
         // Re-login to the original system and get the cookie
-        const secureData = await prisma.student.findUnique({
-            where: { id: studentId },
-            select: {
-                password: true,
-                encryptedUek: true
-            }
-        })
-        if (!secureData) { throw new NotFoundError("STUDENT", "Student ID not found in database.") }
-
-        const uek = decryptUek(Buffer.from(secureData.encryptedUek))
-        if (!uek) { throw new InternalError("Failed to decrypt User Encryption Key (UEK).") }
-
-        const password = decryptWithUek(Buffer.from(secureData.password), uek)
-        if (!password) { throw new InternalError("Failed to decrypt password with User Encryption Key (UEK).") }
-
-        const newCookie = await seniorSystem.loginAndGetCookie({ sid: studentId, password })
+        const newCookie = await seniorSystem.loginAndGetCookie({ sid: studentId, password: userPassword })
         await seniorSystem.initializeSession(newCookie)
 
         await setLoginCookieToRedis(newCookie, studentId)
@@ -81,7 +86,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
 
 export const getStudentDataFromOldSite = async (sid: string, password: string): Promise<StudentData> => {
     if (sid.length === SENIOR_SID_LENGTH) {
-        let cookie = await getLoginCookie(sid)
+        let cookie = await getLoginCookie(sid, password)
 
         const profileContent = await seniorSystem.getStudentProfile(cookie)
         const parsedProfile = parseProfile(profileContent)
@@ -174,7 +179,7 @@ export const updateStudentProfileFromOldSite = async (sid: string): Promise<Stud
     });
 
     if (!secureData) {
-        throw new NotFoundError(`Student with ID ${sid} not found in the database.`);
+        throw new NotFoundError("STUDENT", `Student with ID ${sid} not found in the database.`);
     }
     if (!secureData.encryptedUek || !secureData.password) {
         throw new InternalError("Missing encrypted UEK or password for decryption.");
@@ -344,7 +349,11 @@ export const getExamById = async (studentId: string, id: string): Promise<Exam |
         },
     })
 
-    if (exam?.semester.studentId !== studentId) {
+    if (!exam) {
+        throw new NotFoundError("EXAM")
+    }
+
+    if (exam.semester.studentId !== studentId) {
         throw new PermissionError("Unauthorized access. Permission denied.")
     }
     const { semester, ...pureExam } = exam
@@ -359,7 +368,7 @@ export const getCurrentSemesterAndUpdate = async (studentId: string): Promise<Se
             encryptedUek: true
         }
     })
-    if (!secureData) { throw new NotFoundError(`Student with ID ${studentId} not found in database.`) }
+    if (!secureData) { throw new NotFoundError("STUDENT") }
 
     const uek = decryptUek(Buffer.from(secureData.encryptedUek))
     if (!uek) { throw new InternalError("Failed to decrypt User Encryption Key (UEK).") }
@@ -490,7 +499,7 @@ export const updateDisplinary = async (studentId: string): Promise<DisciplinaryE
             where: { id: studentId },
             include: { disciplinaryEvents: true }
         })
-        if (!student) throw new NotFoundError(`Student with ID ${studentId} not found in database.`)
+        if (!student) throw new NotFoundError("STUDENT", `Student with ID ${studentId} not found in database.`)
 
         // there're 3 types of events: 
         // 1. to create
