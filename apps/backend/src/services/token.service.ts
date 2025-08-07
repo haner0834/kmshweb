@@ -10,6 +10,10 @@ const JWT_ACCESS_EXPIRES_IN: ms.StringValue = "15m"
 const JWT_REFRESH_EXPIRES_IN: ms.StringValue = "7d"
 const JWT_TRUSTED_DEVICE_EXPIRES_IN: ms.StringValue = "30d"
 
+export const getRefreshTokenMaxAge = (trustDevice: boolean): number => {
+    return (trustDevice ? 7 : 30) * 24 * 60 * 60 * 1000
+}
+
 export const generateAccessToken = (payload: StudentPayload): string => {
     return jwt.sign(payload, JWT_ACCESS_SECRET, { expiresIn: JWT_ACCESS_EXPIRES_IN, subject: payload.id })
 }
@@ -30,7 +34,7 @@ export const generateRefreshToken = (studentId: string, isTrusted: boolean): str
 export const generateTokens = (payload: StudentPayload, isTrusted: boolean): Tokens => {
     const accessToken = generateAccessToken(payload)
     const refreshToken = generateRefreshToken(payload.id, isTrusted)
-    return { accessToken, refreshToken }
+    return { accessToken, refreshToken, cookieMaxAge: getRefreshTokenMaxAge(isTrusted) }
 }
 
 export const verifyAccessToken = (token: string): StudentPayload | null => {

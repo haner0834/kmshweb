@@ -5,6 +5,7 @@ import { AuthRequest, LoginRequestBody, RefreshRequestBody, Tokens } from '../ty
 import { DeviceType } from '@prisma/client';
 import { logger } from '../utils/logger.utils';
 import { AuthHandler, TypedResponse } from '../types/api.types';
+import { getRefreshTokenMaxAge } from '../services/token.service';
 
 const refreshTokenCookieOptions = {
     httpOnly: true,
@@ -56,7 +57,7 @@ export const registerHandler = async (req: Request, res: TypedResponse<{ id: str
  * @param res Express Response object.
  * @returns void
  */
-export const loginHandler = async (req: Request, res: TypedResponse<{ accessToken: string, refreshToken: string }>): Promise<void> => {
+export const loginHandler = async (req: Request, res: TypedResponse<Tokens>): Promise<void> => {
     const { id, password, trustDevice = false, deviceInfo }: LoginRequestBody = req.body;
 
     if (!id || !password) {
@@ -79,7 +80,10 @@ export const loginHandler = async (req: Request, res: TypedResponse<{ accessToke
 
         const tokens = await authService.login(id, password, trustDevice, deviceInfo, ipAddress, userAgent)
 
-        res.cookie('refreshToken', tokens.refreshToken, refreshTokenCookieOptions)
+        res.cookie('refreshToken', tokens.refreshToken, {
+            ...refreshTokenCookieOptions,
+            maxAge: tokens.cookieMaxAge,
+        })
 
         res.success({
             accessToken: tokens.accessToken,
@@ -126,7 +130,7 @@ export const wrappedLoginHandler = async (req: Request, res: TypedResponse<Login
  * @param res Express Response object.
  * @returns void
  */
-export const refreshHandler = async (req: Request, res: TypedResponse<{ accessToken: string, refreshToken: string }>): Promise<void> => {
+export const refreshHandler = async (req: Request, res: TypedResponse<Tokens>): Promise<void> => {
     const { refreshToken: bodyToken }: RefreshRequestBody = req.body
     const cookieToken = req.cookies.refreshToken
     const refreshToken = cookieToken || bodyToken
@@ -140,7 +144,10 @@ export const refreshHandler = async (req: Request, res: TypedResponse<{ accessTo
         const newTokens = await authService.refresh(refreshToken)
 
         if (cookieToken) {
-            res.cookie('refreshToken', newTokens.refreshToken, refreshTokenCookieOptions)
+            res.cookie('refreshToken', newTokens.refreshToken, {
+                ...refreshTokenCookieOptions,
+                maxAge: newTokens.cookieMaxAge,
+            })
         }
 
         res.success({
