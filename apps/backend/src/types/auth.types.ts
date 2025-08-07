@@ -14,6 +14,7 @@ export interface AuthRequest extends Request {
 export interface Tokens {
     accessToken: string;
     refreshToken: string;
+    cookieMaxAge: number;
 }
 
 export interface DeviceInfo {
