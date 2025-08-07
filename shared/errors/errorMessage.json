@@ -7,6 +7,10 @@
     "message": "請輸入學號與密碼",
     "devNote": "Missing ID or password in request"
   },
+  "WRONG_ID_PASSWORD": {
+    "message": "學號或密碼錯誤",
+    "devNote": "Wrong ID or password"
+  },
   "MISSING_REQUIRED_INFO": {
     "message": "缺少裝置資訊，請重試",
     "devNote": "Missing deviceInfo, deviceInfo.clientSideDeviceId or deviceInfo.type"
