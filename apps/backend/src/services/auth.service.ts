@@ -255,7 +255,7 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
 
     const student = await prisma.student.findUnique({ where: { id: dbTokenRecord.studentId } })
     if (!student) {
-        throw new NotFoundError("Couldn't find related student")
+        throw new NotFoundError("STUDENT")
     }
 
     const studentPayload: StudentPayload = { id: student.id, name: student.name, classId: student.classId }
@@ -319,7 +319,7 @@ export const forceLogout = async (actorStudentId: string, deviceToLogoutId: stri
     })
 
     if (!deviceToLogout) {
-        throw new NotFoundError("Couldn't find related device.")
+        throw new NotFoundError("DEVICE", "Couldn't find related device.")
     }
 
     // Security Check: Ensure the user trying to log out a device owns that device.

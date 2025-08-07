@@ -38,8 +38,8 @@ export class InternalError extends AppError {
 }
 
 export class PermissionError extends AppError {
-    constructor(message = "Internal server error.") {
-        super("NO_PERMISSION", message, 500)
+    constructor(message = "No permission to access the data.") {
+        super("NO_PERMISSION", message, 403)
     }
 }
 
