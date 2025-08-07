@@ -268,10 +268,9 @@ export const getCurrentStudentSemesterFromDb = async (
         include: {
             exams: {
                 orderBy: { defaultOrder: "asc" },
-                include: {
-                    subjects: {
-                        orderBy: { sortOrder: "asc" }
-                    }
+                select: {
+                    id: true,
+                    name: true,
                 }
             }
         },
