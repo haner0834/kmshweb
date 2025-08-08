@@ -1,3 +1,4 @@
+import { trace } from "console";
 import { getTraceId } from "./traceid.utils";
 import { winstonLogger } from "./winston.utils";
 
@@ -174,7 +175,7 @@ class Logger {
 
         const callerInfo = filePath ? `${filePath}:${line}:${column}` : '';
 
-        const { message, meta } = formatDevError({
+        const { message } = formatDevError({
             traceId,
             service,
             action,
@@ -182,7 +183,12 @@ class Logger {
             context,
         });
 
-        winstonLogger.error(message, meta);
+        winstonLogger.error(message, {
+            service,
+            action,
+            traceId,
+            context,
+        });
 
         if (process.env.NODE_ENV !== 'production' && error.stack) {
             winstonLogger.error(error.stack);
@@ -205,7 +211,13 @@ class Logger {
             callerInfo,
         });
 
-        winstonLogger.info(formattedMessage, meta);
+        winstonLogger.info(formattedMessage, {
+            traceId,
+            service,
+            action,
+            context,
+            callerInfo,
+        });
     }
 
     public warn(message: string, context?: Record<string, any>): void {
@@ -224,7 +236,13 @@ class Logger {
             callerInfo,
         });
 
-        winstonLogger.warn(formattedMessage, meta);
+        winstonLogger.warn(formattedMessage, {
+            traceId,
+            service,
+            action,
+            context,
+            callerInfo,
+        });
     }
 
     public debug(message: string, context?: Record<string, any>): void {
@@ -243,7 +261,13 @@ class Logger {
             callerInfo,
         });
 
-        winstonLogger.debug(formattedMessage, meta);
+        winstonLogger.debug(formattedMessage, {
+            traceId,
+            service,
+            action,
+            context,
+            callerInfo,
+        });
     }
 }
 
