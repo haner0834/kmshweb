@@ -115,6 +115,8 @@ export async function login(
     userAgent: string
 ): Promise<Tokens> {
     logger.info('Login attempt', {
+        service: "auth-service",
+        action: "login",
         studentId: id,
         ip: ipAddress,
         deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
@@ -130,12 +132,20 @@ export async function login(
 
     const uek = cryptoUtil.decryptUek(Buffer.from(student.encryptedUek))
     if (!uek) {
-        logger.warn("UEK decrypt failed", { studentId: id })
+        logger.warn("UEK decrypt failed", {
+            service: "auth-service",
+            action: "login",
+            studentId: id,
+        })
         throw new InternalError("Couldn't decrypt UEK")
     }
     const decryptedPassword = cryptoUtil.decryptWithUek(Buffer.from(student.password), uek)
     if (decryptedPassword !== password) {
-        logger.warn("Incorrect password", { studentId: id })
+        logger.warn("Incorrect password", {
+            service: "auth-service",
+            action: "login",
+            studentId: id,
+        })
         throw new AuthError("WRONG_ID_PASSWORD", "Wrong ID or password", 401)
     }
 
@@ -149,7 +159,12 @@ export async function login(
     const hashedToken = await cryptoUtil.hashRefreshToken(tokens.refreshToken)
     const verifiedToken = verifyRefreshToken(tokens.refreshToken)
     if (!verifiedToken?.exp) {
-        logger.warn("Invalid generated refresh token", { studentId: id, tokens })
+        logger.warn("Invalid generated refresh token", {
+            service: "auth-service",
+            action: "login",
+            studentId: id,
+            tokens,
+        })
         throw new InternalError("Couldn't generate valid token")
     }
     const expiresAt = new Date(verifiedToken.exp * 1000)
@@ -178,7 +193,11 @@ export async function login(
                 // been deleted by another process (e.g., logout) between the find and delete operations.
                 // It's safe to ignore this error and proceed.
                 const message = `Could not find old refresh token ${existingDevice.refreshTokenId} to delete. It might have been deleted already. IT'S SAFE TO IGNORE.`
-                logger.warn(message, { studentId: id })
+                logger.warn(message, {
+                    service: "auth-service",
+                    action: "login",
+                    studentId: id
+                })
             }
         }
 
@@ -225,6 +244,8 @@ export async function login(
     await notifyOtherTrustedDevices(student.id, newDevice)
 
     logger.info('Login successful', {
+        service: "auth-service",
+        action: "login",
         studentId: student.id,
         deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
         trusted: trustDevice,
@@ -244,6 +265,8 @@ export async function wrappedLogin(
     userAgent: string
 ) {
     logger.info("Wrapped login attempt", {
+        service: "auth-service",
+        action: "login",
         studentId,
         deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
     })
@@ -261,7 +284,10 @@ export async function wrappedLogin(
  * @throws {AuthError} If the refresh token is invalid or expired.
  */
 export async function refresh(oldRefreshToken: string): Promise<Tokens> {
-    logger.info("Refresh attempt")
+    logger.info("Refresh attempt", {
+        service: "auth-service",
+        action: "login",
+    })
     const verifiedPayload = verifyRefreshToken(oldRefreshToken)
     if (!verifiedPayload?.sub) {
         logger.warn("Invalid or expired refresh token", { subject: verifiedPayload?.sub })
@@ -289,7 +315,11 @@ export async function refresh(oldRefreshToken: string): Promise<Tokens> {
 
     const student = await prisma.student.findUnique({ where: { id: dbTokenRecord.studentId } })
     if (!student) {
-        logger.warn("Token related student not found", { tokenId: dbTokenRecord.id })
+        logger.warn("Token related student not found", {
+            service: "auth-service",
+            action: "login",
+            tokenId: dbTokenRecord.id
+        })
         throw new NotFoundError("STUDENT")
     }
 
@@ -311,7 +341,10 @@ export async function refresh(oldRefreshToken: string): Promise<Tokens> {
             expiresAt: newExpiresAt,
         },
     })
-    logger.info("Token updated")
+    logger.info("Token updated", {
+        service: "auth-service",
+        action: "login",
+    })
 
     return newTokens
 }
@@ -322,7 +355,10 @@ export async function refresh(oldRefreshToken: string): Promise<Tokens> {
  * @returns void
  */
 export async function logout(refreshToken: string): Promise<void> {
-    logger.info("Logout attempt")
+    logger.info("Logout attempt", {
+        service: "auth-service",
+        action: "login",
+    })
     const verifiedPayload = verifyRefreshToken(refreshToken)
     if (!verifiedPayload?.sub) {
         logger.warn("Missing subject from token", { subject: verifiedPayload?.sub })
@@ -338,7 +374,10 @@ export async function logout(refreshToken: string): Promise<void> {
         }
     }
 
-    logger.info("Logout successful")
+    logger.info("Logout successful", {
+        service: "auth-service",
+        action: "login",
+    })
 }
 
 /**
@@ -349,7 +388,12 @@ export async function logout(refreshToken: string): Promise<void> {
  * @throws {AuthError} If the device does not exist or does not belong to the student.
  */
 export async function forceLogout(actorStudentId: string, deviceToLogoutId: string): Promise<void> {
-    logger.info("Force logout attempt", { actorStudentId, deviceToLogoutId: hash("sha256", deviceToLogoutId) })
+    logger.info("Force logout attempt", {
+        service: "auth-service",
+        action: "login",
+        actorStudentId,
+        deviceToLogoutId: hash("sha256", deviceToLogoutId),
+    })
     const deviceToLogout = await prisma.device.findUnique({
         where: { id: deviceToLogoutId },
         include: {
@@ -366,7 +410,12 @@ export async function forceLogout(actorStudentId: string, deviceToLogoutId: stri
 
     // Security Check: Ensure the user trying to log out a device owns that device.
     if (deviceToLogout.student.id !== actorStudentId) {
-        logger.warn(`No permission to logout`, { actorStudentId, deviceToLogoutId: hash("sha256", deviceToLogoutId) })
+        logger.warn(`No permission to logout`, {
+            service: "auth-service",
+            action: "login",
+            actorStudentId,
+            deviceToLogoutId: hash("sha256", deviceToLogoutId),
+        })
         throw new PermissionError("Insufficient permissions to log out of a device that does not belong to you.")
     }
 
@@ -385,5 +434,9 @@ export async function forceLogout(actorStudentId: string, deviceToLogoutId: stri
         })
     })
 
-    logger.info("Force logout successful", { actorStudentId })
+    logger.info("Force logout successful", {
+        service: "auth-service",
+        action: "login",
+        actorStudentId,
+    })
 }

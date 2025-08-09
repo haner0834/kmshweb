@@ -199,8 +199,8 @@ class Logger {
         const traceId = getTraceId() ?? "no-trace";
         const { functionName, serviceName, filePath, line, column } = getCallerMeta();
 
-        const action = functionName;
-        const service = serviceName;
+        const action = context?.action ?? functionName;
+        const service = context?.service ?? serviceName;
         const callerInfo = filePath ? `${filePath}:${line}:${column}` : '';
 
         const { message: formattedMessage, meta } = formatLogMessage("info", message, {
@@ -224,8 +224,8 @@ class Logger {
         const traceId = getTraceId() ?? "no-trace";
         const { functionName, serviceName, filePath, line, column } = getCallerMeta();
 
-        const action = functionName;
-        const service = serviceName;
+        const action = context?.action ?? functionName;
+        const service = context?.service ?? serviceName;
         const callerInfo = filePath ? `${filePath}:${line}:${column}` : '';
 
         const { message: formattedMessage, meta } = formatLogMessage("warn", message, {
@@ -249,8 +249,8 @@ class Logger {
         const traceId = getTraceId() ?? "no-trace";
         const { functionName, serviceName, filePath, line, column } = getCallerMeta();
 
-        const action = functionName;
-        const service = serviceName;
+        const action = context?.action ?? functionName;
+        const service = context?.service ?? serviceName;
         const callerInfo = filePath ? `${filePath}:${line}:${column}` : '';
 
         const { message: formattedMessage, meta } = formatLogMessage("debug", message, {
