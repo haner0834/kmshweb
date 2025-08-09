@@ -43,7 +43,7 @@ export async function register(sid: string, password: string): Promise<StudentDa
         throw new AuthError("ACCOUNT_REGISTERED", "This accound has been registered", 409)
     }
 
-    loginStudentAccount(sid, password)
+    await loginStudentAccount(sid, password)
 
     // --- ENCRYPTION FLOW ---
     const uek = cryptoUtil.generateUek();

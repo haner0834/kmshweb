@@ -10,7 +10,8 @@ import { fetchScoreDataFromOldSeniorSite } from "./student.senior.service";
 import { getLoginCookieFromRedis, setLoginCookieToRedis } from "../utils/redis.utils";
 import { SemesterWithDetails } from "../types/crawler.senior.types";
 import { DisciplinaryEventDTO, extractStudentName, parseStudentDisciplinaryPage } from "./parser.senior/disciplinarypage.service";
-import { BadRequestError, InternalError, NotFoundError, PermissionError } from "../types/error.types";
+import { AppError, BadRequestError, InternalError, NotFoundError, PermissionError } from "../types/error.types";
+import e from "express";
 
 /**
  * Get login cookie from Redis if exist, otherwise re-login to the original website and get session cookie.
@@ -65,10 +66,10 @@ export const loginStudentAccount = async (sid: string, password: string) => {
         if (sid.length === SENIOR_SID_LENGTH) {
             // Login senior system
             const redisKey = `session:senior:${sid}`
-            redis.del(redisKey)
+            await redis.del(redisKey)
 
             const cookie = await seniorSystem.loginAndGetCookie({ sid, password })
-            seniorSystem.initializeSession(cookie)
+            await seniorSystem.initializeSession(cookie)
 
             await setLoginCookieToRedis(cookie, sid)
         } else if (sid.length === JUNIOR_SID_LENGTH) {
@@ -79,6 +80,9 @@ export const loginStudentAccount = async (sid: string, password: string) => {
     } catch (error) {
         if (error instanceof seniorSystem.SeniorLoginError) {
             console.log(`Senior login error with id: ${sid}, message: ${error.message}`)
+        }
+        if (error instanceof AppError) {
+            throw error
         }
         console.log(`Unknown error:`, error)
     }
