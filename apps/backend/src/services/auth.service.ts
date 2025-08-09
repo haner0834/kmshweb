@@ -7,6 +7,16 @@ import * as cryptoUtil from "../utils/crypto.utils"
 import { notifyOtherTrustedDevices } from "./notification.service"
 import { loginStudentAccount, getStudentDataFromOldSite } from "./student.service"
 import { AppError, AuthError, InternalError, NotFoundError, PermissionError } from "../types/error.types"
+import { logger } from "../utils/logger.utils"
+import { hash } from "crypto"
+
+const hashSecureValueFromDeviceInfo = (deviceInfo: DeviceInfo) => {
+    return {
+        type: deviceInfo.type,
+        cidHash: hash("sha256", deviceInfo.clientSideDeviceId),
+        pushTokenHash: deviceInfo.pushToken ? hash("sha256", deviceInfo.pushToken) : undefined
+    }
+}
 
 export const checkIfStudentExist = async (studentId: string): Promise<boolean> => {
     const exist = await prisma.student.findUnique({
@@ -104,6 +114,14 @@ export const login = async (
     ipAddress: string,
     userAgent: string
 ): Promise<Tokens> => {
+    logger.info('Login attempt', {
+        studentId: id,
+        ip: ipAddress,
+        deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
+        trusted: trustDevice,
+        userAgent
+    });
+
     const student = await prisma.student.findUnique({ where: { id } })
 
     if (!student) {
@@ -112,10 +130,12 @@ export const login = async (
 
     const uek = cryptoUtil.decryptUek(Buffer.from(student.encryptedUek))
     if (!uek) {
+        logger.warn("UEK decrypt failed", { studentId: id })
         throw new InternalError("Couldn't decrypt UEK")
     }
     const decryptedPassword = cryptoUtil.decryptWithUek(Buffer.from(student.password), uek)
     if (decryptedPassword !== password) {
+        logger.warn("Incorrect password", { studentId: id })
         throw new AuthError("WRONG_ID_PASSWORD", "Wrong ID or password", 401)
     }
 
@@ -129,6 +149,7 @@ export const login = async (
     const hashedToken = await cryptoUtil.hashRefreshToken(tokens.refreshToken)
     const verifiedToken = verifyRefreshToken(tokens.refreshToken)
     if (!verifiedToken?.exp) {
+        logger.warn("Invalid generated refresh token", { studentId: id, tokens })
         throw new InternalError("Couldn't generate valid token")
     }
     const expiresAt = new Date(verifiedToken.exp * 1000)
@@ -156,7 +177,8 @@ export const login = async (
                 // This catch block handles the rare edge case where the token might have
                 // been deleted by another process (e.g., logout) between the find and delete operations.
                 // It's safe to ignore this error and proceed.
-                console.warn(`Could not find old refresh token ${existingDevice.refreshTokenId} to delete. It might have been deleted already.`);
+                const message = `Could not find old refresh token ${existingDevice.refreshTokenId} to delete. It might have been deleted already. IT'S SAFE TO IGNORE.`
+                logger.warn(message, { studentId: id })
             }
         }
 
@@ -200,9 +222,15 @@ export const login = async (
         })
     })
 
-    if (trustDevice) {
-        await notifyOtherTrustedDevices(student.id, newDevice)
-    }
+    await notifyOtherTrustedDevices(student.id, newDevice)
+
+    logger.info('Login successful', {
+        studentId: student.id,
+        deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
+        trusted: trustDevice,
+        ip: ipAddress,
+        deviceUpdated: true
+    });
 
     return tokens
 }
@@ -215,6 +243,10 @@ export const wrappedLogin = async (
     ipAddress: string,
     userAgent: string
 ) => {
+    logger.info("Wrapped login attempt", {
+        studentId,
+        deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
+    })
     if (await checkIfStudentExist(studentId)) {
         login(studentId, password, trustDevice, deviceInfo, ipAddress, userAgent)
     } else {
@@ -229,8 +261,10 @@ export const wrappedLogin = async (
  * @throws {AuthError} If the refresh token is invalid or expired.
  */
 export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
+    logger.info("Refresh attempt")
     const verifiedPayload = verifyRefreshToken(oldRefreshToken)
     if (!verifiedPayload?.sub) {
+        logger.warn("Invalid or expired refresh token", { subject: verifiedPayload?.sub })
         throw new AuthError("INVALID_REFRESH", "Invalid or expired refresh token", 401)
     }
     const studentId = verifiedPayload.sub
@@ -255,6 +289,7 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
 
     const student = await prisma.student.findUnique({ where: { id: dbTokenRecord.studentId } })
     if (!student) {
+        logger.warn("Token related student not found", { tokenId: dbTokenRecord.id })
         throw new NotFoundError("STUDENT")
     }
 
@@ -263,6 +298,7 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
     const newHashedToken = await cryptoUtil.hashRefreshToken(newTokens.refreshToken)
     const newVerifiedToken = verifyRefreshToken(newTokens.refreshToken)
     if (!newVerifiedToken?.exp) {
+        logger.warn("Invalid generated refresh token")
         throw new InternalError("Couldn't generate valid token")
     }
 
@@ -275,6 +311,7 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
             expiresAt: newExpiresAt,
         },
     })
+    logger.info("Token updated")
 
     return newTokens
 }
@@ -285,9 +322,11 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
  * @returns void
  */
 export const logout = async (refreshToken: string): Promise<void> => {
+    logger.info("Logout attempt")
     const verifiedPayload = verifyRefreshToken(refreshToken)
     if (!verifiedPayload?.sub) {
-        return
+        logger.warn("Missing subject from token", { subject: verifiedPayload?.sub })
+        throw new InternalError("Invalid refresh token.")
     }
 
     const userTokens = await prisma.refreshToken.findMany({ where: { studentId: verifiedPayload.sub } })
@@ -298,6 +337,8 @@ export const logout = async (refreshToken: string): Promise<void> => {
             break
         }
     }
+
+    logger.info("Logout successful")
 }
 
 /**
@@ -308,6 +349,7 @@ export const logout = async (refreshToken: string): Promise<void> => {
  * @throws {AuthError} If the device does not exist or does not belong to the student.
  */
 export const forceLogout = async (actorStudentId: string, deviceToLogoutId: string): Promise<void> => {
+    logger.info("Force logout attempt", { actorStudentId, deviceToLogoutId: hash("sha256", deviceToLogoutId) })
     const deviceToLogout = await prisma.device.findUnique({
         where: { id: deviceToLogoutId },
         include: {
@@ -324,6 +366,7 @@ export const forceLogout = async (actorStudentId: string, deviceToLogoutId: stri
 
     // Security Check: Ensure the user trying to log out a device owns that device.
     if (deviceToLogout.student.id !== actorStudentId) {
+        logger.warn(`No permission to logout`, { actorStudentId, deviceToLogoutId: hash("sha256", deviceToLogoutId) })
         throw new PermissionError("Insufficient permissions to log out of a device that does not belong to you.")
     }
 
@@ -341,4 +384,6 @@ export const forceLogout = async (actorStudentId: string, deviceToLogoutId: stri
             data: { tokensValidFrom: new Date() }
         })
     })
+
+    logger.info("Force logout successful", { actorStudentId })
 }
