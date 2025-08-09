@@ -4,7 +4,7 @@ import { registerHandler, refreshHandler, loginHandler, logoutHandler, wrappedLo
 const router = Router()
 router.post('/register', registerHandler)
 router.post('/login', loginHandler)
-router.post('/login/wrap', wrappedLoginHandler)
+router.post('/login-wrap', wrappedLoginHandler)
 router.post('/refresh', refreshHandler)
 router.post('/logout', logoutHandler)
 
