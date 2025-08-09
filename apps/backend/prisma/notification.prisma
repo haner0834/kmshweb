@@ -5,11 +5,27 @@ model Notification {
 
     title  String
     body   String
-    isRead Boolean @default(false)
+    isRead Boolean          @default(false)
+    type   NotificationType @default(other)
+    icon   NotificationIcon @default(none)
 
     payload Json?
 
     createdAt DateTime @default(now())
 
     @@map("Notification")
+}
+
+enum NotificationType {
+    update
+    warn
+    other
+}
+
+enum NotificationIcon {
+    score
+    disciplinary
+    auth
+    bus
+    none
 }

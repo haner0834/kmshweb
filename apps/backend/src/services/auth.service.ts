@@ -1,6 +1,6 @@
 import prisma from "../config/database"
 import redis from "../config/redis"
-import { Student, NotificationType } from "@prisma/client"
+import { Student, NotificationOption } from "@prisma/client"
 import { generateTokens, verifyRefreshToken } from "./token.service"
 import { StudentPayload, Tokens, DeviceInfo } from "../types/auth.types"
 import * as cryptoUtil from "../utils/crypto.utils"
@@ -88,7 +88,7 @@ export async function register(sid: string, password: string): Promise<Student> 
             status: studentData.enrollmentStatus,
             credential: studentData.credential,
             classId: relatedClass.id,
-            enabledNotifications: Object.values(NotificationType),
+            enabledNotifications: Object.values(NotificationOption),
             isQuickAccessOpen: true,
             tokensValidFrom: null
         }
