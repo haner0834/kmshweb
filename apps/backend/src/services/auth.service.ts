@@ -266,7 +266,7 @@ export async function wrappedLogin(
 ) {
     logger.info("Wrapped login attempt", {
         service: "auth-service",
-        action: "login",
+        action: "wrapped-login",
         studentId,
         deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
     })
@@ -286,7 +286,7 @@ export async function wrappedLogin(
 export async function refresh(oldRefreshToken: string): Promise<Tokens> {
     logger.info("Refresh attempt", {
         service: "auth-service",
-        action: "login",
+        action: "refresh",
     })
     const verifiedPayload = verifyRefreshToken(oldRefreshToken)
     if (!verifiedPayload?.sub) {
@@ -317,7 +317,7 @@ export async function refresh(oldRefreshToken: string): Promise<Tokens> {
     if (!student) {
         logger.warn("Token related student not found", {
             service: "auth-service",
-            action: "login",
+            action: "refresh",
             tokenId: dbTokenRecord.id
         })
         throw new NotFoundError("STUDENT")
@@ -343,7 +343,7 @@ export async function refresh(oldRefreshToken: string): Promise<Tokens> {
     })
     logger.info("Token updated", {
         service: "auth-service",
-        action: "login",
+        action: "refresh",
     })
 
     return newTokens
@@ -357,7 +357,7 @@ export async function refresh(oldRefreshToken: string): Promise<Tokens> {
 export async function logout(refreshToken: string): Promise<void> {
     logger.info("Logout attempt", {
         service: "auth-service",
-        action: "login",
+        action: "logout",
     })
     const verifiedPayload = verifyRefreshToken(refreshToken)
     if (!verifiedPayload?.sub) {
@@ -376,7 +376,7 @@ export async function logout(refreshToken: string): Promise<void> {
 
     logger.info("Logout successful", {
         service: "auth-service",
-        action: "login",
+        action: "logout",
     })
 }
 
@@ -390,7 +390,7 @@ export async function logout(refreshToken: string): Promise<void> {
 export async function forceLogout(actorStudentId: string, deviceToLogoutId: string): Promise<void> {
     logger.info("Force logout attempt", {
         service: "auth-service",
-        action: "login",
+        action: "force-logout",
         actorStudentId,
         deviceToLogoutId: hash("sha256", deviceToLogoutId),
     })
@@ -412,7 +412,7 @@ export async function forceLogout(actorStudentId: string, deviceToLogoutId: stri
     if (deviceToLogout.student.id !== actorStudentId) {
         logger.warn(`No permission to logout`, {
             service: "auth-service",
-            action: "login",
+            action: "force-logout",
             actorStudentId,
             deviceToLogoutId: hash("sha256", deviceToLogoutId),
         })
@@ -436,7 +436,7 @@ export async function forceLogout(actorStudentId: string, deviceToLogoutId: stri
 
     logger.info("Force logout successful", {
         service: "auth-service",
-        action: "login",
+        action: "force-logout",
         actorStudentId,
     })
 }
