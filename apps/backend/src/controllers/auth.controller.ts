@@ -32,7 +32,7 @@ export const registerHandler = async (req: Request, res: TypedResponse<{ id: str
 
     try {
         const student = await authService.register(id, password);
-        res.success({ id: student.id, name: student.name }, undefined, 201)
+        res.success({ id: student.sid, name: student.name }, undefined, 201)
     } catch (error) {
         if (error instanceof AppError) {
             logger.error({
@@ -116,10 +116,61 @@ export const wrappedLoginHandler = async (req: Request, res: TypedResponse<Login
         return
     }
 
-    if (await authService.checkIfStudentExist(id)) {
-        await loginHandler(req, res)
-    } else {
-        await registerHandler(req, res)
+    try {
+        if (await authService.checkIfStudentExist(id)) {
+            // Login
+            const { deviceInfo, trustDevice = false }: LoginRequestBody = req.body
+            if (!deviceInfo || !deviceInfo.clientSideDeviceId || !Object.values(DeviceType).includes(deviceInfo.type)) {
+                res.fail("MISSING_REQUIRED_INFO", "Missing deviceInfo, deviceInfo.clientSideDeviceId or deviceInfo.type")
+                return
+            }
+            // TODO: Remove this lock
+            if (deviceInfo.type !== 'web' && !deviceInfo.pushToken) {
+                res.fail("NO_PUSH_TOKEN", "Missing push token from mobile client.")
+                return
+            }
+
+            const ipAddress = req.ip || "No ip";
+            const userAgent = req.headers["user-agent"] || "unknown"
+
+            const tokens = await authService.login(id, password, trustDevice, deviceInfo, ipAddress, userAgent)
+
+            res.cookie('refreshToken', tokens.refreshToken, {
+                ...refreshTokenCookieOptions,
+                maxAge: tokens.cookieMaxAge,
+            })
+
+            const meta = {
+                action: "login",
+            }
+            res.success({
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+            }, meta)
+        } else {
+            // Register
+            const studentData = await authService.register(id, password);
+            const response = studentData
+            const meta = {
+                action: "register",
+            }
+            res.success(response, meta, 201)
+        }
+    } catch (error) {
+        if (error instanceof AppError) {
+            logger.error({
+                service: "auth-service",
+                action: "wrapped-login",
+                error: error,
+                context: {
+                    studentId: id,
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
+            return
+        }
+        res.internalServerError("An unexpected error occurred while login(wrapped).")
+        return
     }
 }
 

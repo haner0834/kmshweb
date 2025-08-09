@@ -9,6 +9,7 @@ import { loginStudentAccount, getStudentDataFromOldSite } from "./student.servic
 import { AppError, AuthError, InternalError, NotFoundError, PermissionError } from "../types/error.types"
 import { logger } from "../utils/logger.utils"
 import { hash } from "crypto"
+import { StudentData } from "../types/student.types"
 
 const hashSecureValueFromDeviceInfo = (deviceInfo: DeviceInfo) => {
     return {
@@ -36,13 +37,13 @@ export async function checkIfStudentExist(studentId: string): Promise<boolean> {
  * @returns The created Student object (mocked, not yet saved to DB).
  * @throws {AuthError} If the account already exists.
  */
-export async function register(sid: string, password: string): Promise<Student> {
+export async function register(sid: string, password: string): Promise<StudentData> {
     const existingStudent = await prisma.student.findUnique({ where: { id: sid } })
     if (existingStudent) {
         throw new AuthError("ACCOUNT_REGISTERED", "This accound has been registered", 409)
     }
 
-    loginStudentAccount(sid, password)
+    await loginStudentAccount(sid, password)
 
     // --- ENCRYPTION FLOW ---
     const uek = cryptoUtil.generateUek();
@@ -74,7 +75,7 @@ export async function register(sid: string, password: string): Promise<Student> 
         relatedClass = newClass
     }
 
-    return await prisma.student.create({
+    await prisma.student.create({
         data: {
             name: studentData.name,
             id: studentData.sid,
@@ -93,6 +94,8 @@ export async function register(sid: string, password: string): Promise<Student> 
             tokensValidFrom: null
         }
     })
+
+    return studentData
 }
 
 /**
