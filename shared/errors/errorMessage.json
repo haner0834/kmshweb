@@ -7,6 +7,10 @@
     "message": "請輸入學號與密碼",
     "devNote": "Missing ID or password in request"
   },
+  "INVALID_SID_FORMAT": {
+    "message": "學號格式錯誤",
+    "devNote": "Invalid student ID format."
+  },
   "WRONG_ID_PASSWORD": {
     "message": "學號或密碼錯誤",
     "devNote": "Wrong ID or password"

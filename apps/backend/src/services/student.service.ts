@@ -75,7 +75,7 @@ export const loginStudentAccount = async (sid: string, password: string) => {
         } else if (sid.length === JUNIOR_SID_LENGTH) {
             // Login junior system
         } else {
-            throw new BadRequestError("Invalid student ID format.")
+            throw new AppError("INVALID_SID_FORMAT", "Invalid student ID format.", 400)
         }
     } catch (error) {
         if (error instanceof seniorSystem.SeniorLoginError) {
