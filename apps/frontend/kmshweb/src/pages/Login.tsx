@@ -53,7 +53,7 @@ const Login = () => {
         },
       };
       const response = await fetch(
-        "http://localhost:3000/api/auth/login/wrap",
+        "http://localhost:3000/api/auth/login-wrap",
         {
           credentials: "include",
           method: "POST",
