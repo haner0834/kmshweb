@@ -18,7 +18,7 @@ const hashSecureValueFromDeviceInfo = (deviceInfo: DeviceInfo) => {
     }
 }
 
-export const checkIfStudentExist = async (studentId: string): Promise<boolean> => {
+export async function checkIfStudentExist(studentId: string): Promise<boolean> {
     const exist = await prisma.student.findUnique({
         where: { id: studentId },
         select: { id: true }
@@ -36,7 +36,7 @@ export const checkIfStudentExist = async (studentId: string): Promise<boolean> =
  * @returns The created Student object (mocked, not yet saved to DB).
  * @throws {AuthError} If the account already exists.
  */
-export const register = async (sid: string, password: string): Promise<Student> => {
+export async function register(sid: string, password: string): Promise<Student> {
     const existingStudent = await prisma.student.findUnique({ where: { id: sid } })
     if (existingStudent) {
         throw new AuthError("ACCOUNT_REGISTERED", "This accound has been registered", 409)
@@ -106,14 +106,14 @@ export const register = async (sid: string, password: string): Promise<Student> 
  * @returns JWT access and refresh tokens.
  * @throws {Error} If authentication fails.
  */
-export const login = async (
+export async function login(
     id: string,
     password: string,
     trustDevice: boolean,
     deviceInfo: DeviceInfo,
     ipAddress: string,
     userAgent: string
-): Promise<Tokens> => {
+): Promise<Tokens> {
     logger.info('Login attempt', {
         studentId: id,
         ip: ipAddress,
@@ -235,14 +235,14 @@ export const login = async (
     return tokens
 }
 
-export const wrappedLogin = async (
+export async function wrappedLogin(
     studentId: string,
     password: string,
     trustDevice: boolean,
     deviceInfo: DeviceInfo,
     ipAddress: string,
     userAgent: string
-) => {
+) {
     logger.info("Wrapped login attempt", {
         studentId,
         deviceInfo: hashSecureValueFromDeviceInfo(deviceInfo),
@@ -260,7 +260,7 @@ export const wrappedLogin = async (
  * @returns New JWT access and refresh tokens.
  * @throws {AuthError} If the refresh token is invalid or expired.
  */
-export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
+export async function refresh(oldRefreshToken: string): Promise<Tokens> {
     logger.info("Refresh attempt")
     const verifiedPayload = verifyRefreshToken(oldRefreshToken)
     if (!verifiedPayload?.sub) {
@@ -321,7 +321,7 @@ export const refresh = async (oldRefreshToken: string): Promise<Tokens> => {
  * @param refreshToken The refresh token to invalidate.
  * @returns void
  */
-export const logout = async (refreshToken: string): Promise<void> => {
+export async function logout(refreshToken: string): Promise<void> {
     logger.info("Logout attempt")
     const verifiedPayload = verifyRefreshToken(refreshToken)
     if (!verifiedPayload?.sub) {
@@ -348,7 +348,7 @@ export const logout = async (refreshToken: string): Promise<void> => {
  * @returns void
  * @throws {AuthError} If the device does not exist or does not belong to the student.
  */
-export const forceLogout = async (actorStudentId: string, deviceToLogoutId: string): Promise<void> => {
+export async function forceLogout(actorStudentId: string, deviceToLogoutId: string): Promise<void> {
     logger.info("Force logout attempt", { actorStudentId, deviceToLogoutId: hash("sha256", deviceToLogoutId) })
     const deviceToLogout = await prisma.device.findUnique({
         where: { id: deviceToLogoutId },
