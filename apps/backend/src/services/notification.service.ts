@@ -1,5 +1,5 @@
 import prisma from "../config/database"
-import { Device, DeviceType, Prisma, Notification } from "@prisma/client"
+import { Device, DeviceType, Prisma, NotificationType, NotificationIcon } from "@prisma/client"
 
 /**
  * A placeholder for sending push notification.
@@ -33,6 +33,8 @@ const sendPushNotification = async (
 const createInAppNotification = async (
     studentId: string,
     title: string,
+    type: NotificationType,
+    icon: NotificationIcon,
     body: string,
     payload: Prisma.JsonObject
 ) => {
@@ -40,6 +42,8 @@ const createInAppNotification = async (
         data: {
             studentId,
             title,
+            type,
+            icon,
             body,
             payload
         }
@@ -74,7 +78,7 @@ export const notifyOtherTrustedDevices = async (
         deviceName: newDevice.userAgent || 'Unknown Device',
     }
 
-    await createInAppNotification(studentId, title, body, notificationPayload)
+    await createInAppNotification(studentId, title, "warn", "auth", body, notificationPayload)
 
     for (const device of otherTrustedDevices) {
         if (device.pushToken && device.type !== "web") {
