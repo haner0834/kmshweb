@@ -36,7 +36,7 @@ const createInAppNotification = async (
     body: string,
     payload: Prisma.JsonObject
 ) => {
-    prisma.notification.create({
+    await prisma.notification.create({
         data: {
             studentId,
             title,
@@ -64,6 +64,7 @@ export const notifyOtherTrustedDevices = async (
         return
     }
 
+    // TODO: Use code instead of hardcoding the title
     const title = "新設備登入"
     const body = `您的帳號於 ${new Date().toLocaleString("zh-TW")} 在新的裝置（ ${newDevice.userAgent} ）上登入。`
 
