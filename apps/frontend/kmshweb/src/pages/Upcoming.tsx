@@ -33,7 +33,7 @@ const map = {
       "全面整合站點、路線、Google Map與時間資訊，讓你輕鬆掌握最新校車動態。無論上下學還是臨時改站想查詢，都能享受真正便捷的線上化車表體驗，而不是艱難的查找那張破表。",
   },
   calendar: {
-    icon: <Calendar className="text-purple-400 w-10 h-10" />,
+    icon: <Calendar className="text-indigo-400 w-10 h-10" />,
     name: "行事曆",
     description:
       "不只是查詢、標記與通知，還有一項尚未公開的神秘功能，將讓你的行事曆徹底顛覆想像。",

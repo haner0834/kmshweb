@@ -10,6 +10,7 @@ import FileUp from "@shared/icons/file-up.svg?react";
 import Bus from "@shared/icons/bus-front.svg?react";
 import TableOfContent from "@shared/icons/table-of-contents.svg?react";
 import CircleDash from "@shared/icons/circle-dashed.svg?react";
+import Calendar from "@shared/icons/calendar.svg?react";
 
 type CardProbs = {
   img: ReactNode;
@@ -112,6 +113,7 @@ const CARD_ITEMS: CardProbs[] = [
 const Home = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const { setNavbarButtonsByType } = useNavbarButtons();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setNavbarButtonsByType(["logo", "themeToggle", "inbox", "profile"]);
@@ -132,7 +134,10 @@ const Home = () => {
           ))}
         </div>
 
-        <ul className="list bg-base-100 rounded-box shadow-sm mx-4 mt-4">
+        <ul
+          onClick={() => navigate("/upcoming/calendar")}
+          className="list bg-base-100 rounded-box shadow-sm mx-4 mt-4"
+        >
           <li className="p-4 pb-2 text-xs opacity-60 tracking-wide uppercase">
             Calendar
           </li>
@@ -142,13 +147,13 @@ const Home = () => {
               <div className="text-2xl font-thin opacity-40 tabular-nums">
                 01
               </div>
-              <div className="font-light opacity-40">Feb</div>
+              <div className="font-light opacity-40">Sep</div>
             </div>
             <div>
-              <img className="size-10 rounded-box" src={logo} />
+              <Calendar className="size-10 text-indigo-400" />
             </div>
             <div className="list-col-grow">
-              <div>Midterm Exam</div>
+              <div>敬請期待</div>
               <div className="text-xs text-error uppercase font-semibold">
                 important
               </div>
