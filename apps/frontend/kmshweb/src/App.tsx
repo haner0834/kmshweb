@@ -13,8 +13,20 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import Profile from "./pages/Profile";
 import { SharedStudent } from "./widgets/StudentContext";
 import LoginCheck from "./pages/LoginCheck";
+import { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    const isDarkMode =
+      storedTheme === "dark" ||
+      (!storedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
+  }, []);
   return (
     <Routes>
       <Route path="/" element={<Navbar />}>

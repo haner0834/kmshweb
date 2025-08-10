@@ -11,10 +11,6 @@ const ThemeToggle = () => {
       (!storedTheme &&
         window.matchMedia("(prefers-color-scheme: dark)").matches);
     setIsDark(isDarkMode);
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDarkMode ? "dark" : "light"
-    );
   }, []);
 
   const toggleTheme = () => {
