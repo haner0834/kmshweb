@@ -22,7 +22,7 @@ export interface Student {
   grade: Grade;
   birthDate: string;
   enrollmentDate: string;
-  status: EnrollmentStatus;
+  enrollmentStatus: EnrollmentStatus;
   gender: Gender;
   stream: Stream;
   classLabel: string;
@@ -403,8 +403,8 @@ export const semesterSummarys: SemesterSummary[] = [
       name: exam.name,
       averageScore: exam.subjects
         ? exam.subjects
-            .map((s) => Number(s.score) ?? 0)
-            .reduce((p, s) => s + p, 0) / exam.subjects.length
+          .map((s) => Number(s.score) ?? 0)
+          .reduce((p, s) => s + p, 0) / exam.subjects.length
         : 0,
     })),
     highestScore: 0,

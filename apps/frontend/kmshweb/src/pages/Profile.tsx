@@ -11,70 +11,14 @@ import Mars from "@shared/icons/mars.svg?react";
 import School from "@shared/icons/school.svg?react";
 import Users from "@shared/icons/users.svg?react";
 import Hash from "@shared/icons/hash.svg?react";
-import type {
-  EnrollmentStatus,
-  Gender,
-  Grade,
-  Stream,
-  Student,
-} from "../types/student";
+import type { Student } from "../types/student";
 import { useAuthFetch } from "../auth/useAuthFetch";
-
-const getGenderText = (gender: Gender): string => {
-  switch (gender) {
-    case "female":
-      return "女";
-    case "male":
-      return "男";
-    default:
-      return "wtf";
-  }
-};
-
-const getGradeText = (grade: Grade): string => {
-  switch (grade) {
-    case "junior1":
-      return "國一";
-    case "junior2":
-      return "國二";
-    case "junior3":
-      return "國三";
-    case "senior1":
-      return "高一";
-    case "senior2":
-      return "高二";
-    case "senior3":
-      return "高三";
-    default:
-      return "wtf";
-  }
-};
-
-const getEnrollmentStatusText = (status: EnrollmentStatus): string => {
-  switch (status) {
-    case "enrolled":
-      return "在學中";
-    case "graduated":
-      return "已畢業";
-    case "suspended":
-      return "休學";
-    case "withdraw":
-      return "退學";
-  }
-};
-
-const getStreamText = (stream: Stream): string => {
-  switch (stream) {
-    case "all":
-      return "不分組";
-    case "science":
-      return "自然組";
-    case "social":
-      return "社會組";
-    case "other":
-      return "虫合組";
-  }
-};
+import {
+  getGradeText,
+  getGenderText,
+  getEnrollmentStatusText,
+  getStreamText,
+} from "../utils/student";
 
 const Row = ({
   icon,
@@ -165,7 +109,7 @@ const Profile = () => {
                   icon={<GraduationHat className="w-7 h-7" />}
                   title="就學狀態"
                   value={`${getEnrollmentStatusText(
-                    student?.status ?? "enrolled"
+                    student?.enrollmentStatus ?? "enrolled"
                   )}`}
                 />
               </ul>

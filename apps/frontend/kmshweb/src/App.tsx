@@ -11,8 +11,22 @@ import Login from "./pages/Login";
 import Disciplinary from "./pages/Disciplinary";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import Profile from "./pages/Profile";
+import { SharedStudent } from "./widgets/StudentContext";
+import LoginCheck from "./pages/LoginCheck";
+import { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    const isDarkMode =
+      storedTheme === "dark" ||
+      (!storedTheme &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDarkMode ? "dark" : "light"
+    );
+  }, []);
   return (
     <Routes>
       <Route path="/" element={<Navbar />}>
@@ -20,7 +34,10 @@ function App() {
 
         <Route path="intro" element={<Intro />} />
 
-        <Route path="login" element={<Login />} />
+        <Route path="login" element={<SharedStudent />}>
+          <Route index element={<Login />} />
+          <Route path="check" element={<LoginCheck />} />
+        </Route>
 
         <Route
           path="home"

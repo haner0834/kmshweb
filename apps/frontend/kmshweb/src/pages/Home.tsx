@@ -5,18 +5,22 @@ import { useEffect, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import TextFile from "@shared/icons/file_text.svg?react";
 import Medal from "@shared/icons/medal.svg?react";
+import Ellipsis from "@shared/icons/ellipsis.svg?react";
+import FileUp from "@shared/icons/file-up.svg?react";
 import Bus from "@shared/icons/bus-front.svg?react";
+import Calendar from "@shared/icons/calendar.svg?react";
 
 type CardProbs = {
   img: ReactNode;
   title: string;
   path: string;
+  isEnabled?: boolean;
 };
 
-const CardForMobile = ({ img, title, path }: CardProbs) => {
+const CardForMobile = ({ img, title, path, isEnabled }: CardProbs) => {
   const navigate = useNavigate();
   const toPath = () => {
-    navigate(path);
+    navigate(isEnabled ? path : `/upcoming/${path.slice(1, path.length)}`);
   };
   return (
     <div
@@ -43,13 +47,18 @@ const CardForBigScreen = ({ img, title }: CardProbs) => {
   );
 };
 
-const Card = ({ img, title, path }: CardProbs) => {
+const Card = ({ img, title, path, isEnabled = false }: CardProbs) => {
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
 
   return isMobile ? (
-    <CardForMobile img={img} title={title} path={path} />
+    <CardForMobile img={img} title={title} path={path} isEnabled={isEnabled} />
   ) : (
-    <CardForBigScreen img={img} title={title} path={path} />
+    <CardForBigScreen
+      img={img}
+      title={title}
+      path={path}
+      isEnabled={isEnabled}
+    />
   );
 };
 
@@ -58,31 +67,35 @@ const CARD_ITEMS: CardProbs[] = [
     img: <TextFile className="text-amber-400" />,
     title: "成績",
     path: "/examscore",
+    isEnabled: true,
   },
-  // {
-  //   img: logo,
-  //   title: "學習歷程",
-  //   path: "/examscore",
-  // },
-  // {
-  //   img: logo,
-  //   title: "社團",
-  //   path: "/examscore",
-  // },
   {
-    img: <Medal className="" />,
+    img: <FileUp className="text-blue-400" />,
+    title: "學習歷程",
+    path: "/learninghistory",
+  },
+  {
+    img: <Medal className="text-pink-400" />,
     title: "獎懲",
     path: "/disciplinary",
+    isEnabled: true,
   },
-  // {
-  //   img: coffeeroll,
-  //   title: "課表",
-  //   path: "/classschedule",
-  // },
+  {
+    img: <Calendar className="text-teal-400" />,
+    title: "課表",
+    path: "/class-schedule",
+  },
   {
     img: <Bus className="text-purple-400" />,
     title: "車表",
-    path: "/busschedule",
+    path: "/bus-schedule",
+    isEnabled: false,
+  },
+  {
+    img: <Ellipsis className="" />,
+    title: "更多",
+    path: "/more",
+    isEnabled: true,
   },
 ];
 
@@ -99,17 +112,17 @@ const Home = () => {
       <div className={`${isMobile ? "w-screen" : ""} pb-8`}>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-20 p-4">
           {CARD_ITEMS.map((item) => (
-            // TODO: Add key to the card
             <Card
               key={item.title}
               img={item.img}
               title={item.title}
               path={item.path}
+              isEnabled={item.isEnabled}
             />
           ))}
         </div>
 
-        <ul className="list bg-base-100 rounded-box shadow-md mx-4">
+        <ul className="list bg-base-100 rounded-box shadow-sm mx-4 mt-4">
           <li className="p-4 pb-2 text-xs opacity-60 tracking-wide uppercase">
             Calendar
           </li>

@@ -9,6 +9,7 @@ import Eye from "@shared/icons/eye.svg?react";
 import EyeSlash from "@shared/icons/eye_slash.svg?react";
 import { getErrorMessage } from "../utils/errors";
 import { useAuth } from "../auth/AuthContext";
+import { useStudent } from "../widgets/StudentContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const Login = () => {
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { setAccessToken } = useAuth();
+  const student = useStudent();
 
   const openModal = () => {
     showModal({
@@ -53,7 +55,7 @@ const Login = () => {
         },
       };
       const response = await fetch(
-        "http://localhost:3000/api/auth/login/wrap",
+        "http://localhost:3000/api/auth/login-wrap",
         {
           credentials: "include",
           method: "POST",
@@ -81,15 +83,39 @@ const Login = () => {
         return;
       }
 
-      console.log("Success!");
-      console.log(json);
+      const action = json.meta.action;
+      if (action === "login") {
+        const accessToken = json.data.accessToken;
+        if (!accessToken) {
+          showModal({
+            title: "未知錯誤",
+            description: "無法取得 JWT token",
+            buttons: [
+              {
+                label: "取消",
+              },
+              {
+                label: "回報問題",
+                role: "primary",
+                style: "btn-primary",
+                // TODO: Add linking action
+              },
+            ],
+          });
+        }
+        setAccessToken(accessToken);
 
-      const accessToken = json.data.accessToken;
-      setAccessToken(accessToken);
+        localStorage.setItem("isLoggedIn", "true");
 
-      localStorage.setItem("isLoggedIn", "true");
+        navigate("/home");
+      } else if (action === "register") {
+        student.setStudent(json.data);
+        student.setId(studentId);
+        student.setPassword(password);
+        student.setTrustDevice(trustDevice);
 
-      navigate("/home");
+        navigate("/login/check");
+      }
     } catch (error) {}
   };
 
