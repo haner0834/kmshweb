@@ -11,6 +11,8 @@ import Login from "./pages/Login";
 import Disciplinary from "./pages/Disciplinary";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import Profile from "./pages/Profile";
+import { SharedStudent } from "./widgets/StudentContext";
+import LoginCheck from "./pages/LoginCheck";
 
 function App() {
   return (
@@ -20,7 +22,10 @@ function App() {
 
         <Route path="intro" element={<Intro />} />
 
-        <Route path="login" element={<Login />} />
+        <Route path="login" element={<SharedStudent />}>
+          <Route index element={<Login />} />
+          <Route path="check" element={<LoginCheck />} />
+        </Route>
 
         <Route
           path="home"
