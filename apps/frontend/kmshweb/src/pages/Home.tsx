@@ -8,7 +8,8 @@ import Medal from "@shared/icons/medal.svg?react";
 import Ellipsis from "@shared/icons/ellipsis.svg?react";
 import FileUp from "@shared/icons/file-up.svg?react";
 import Bus from "@shared/icons/bus-front.svg?react";
-import Calendar from "@shared/icons/calendar.svg?react";
+import TableOfContent from "@shared/icons/table-of-contents.svg?react";
+import CircleDash from "@shared/icons/circle-dashed.svg?react";
 
 type CardProbs = {
   img: ReactNode;
@@ -23,12 +24,21 @@ const CardForMobile = ({ img, title, path, isEnabled }: CardProbs) => {
     navigate(isEnabled ? path : `/upcoming/${path.slice(1, path.length)}`);
   };
   return (
-    <div
-      onClick={toPath}
-      className="bg-base-100 w-full shadow-sm h-20 rounded-xl flex justify-center items-center px-4 gap-2"
-    >
-      {img}
-      <p className="font-semibold">{title}</p>
+    <div className="indicator w-full">
+      {!isEnabled && (
+        <span className="indicator-item badge badge-info me-2">
+          <div className="tooltip tooltip-left" data-tip="敬請期待">
+            <CircleDash className="w-4" strokeWidth={2.5} />
+          </div>
+        </span>
+      )}
+      <div
+        onClick={toPath}
+        className="bg-base-100 w-full shadow-sm h-20 rounded-xl flex justify-center items-center px-4 gap-2"
+      >
+        {img}
+        <p className="font-semibold">{title}</p>
+      </div>
     </div>
   );
 };
@@ -81,14 +91,14 @@ const CARD_ITEMS: CardProbs[] = [
     isEnabled: true,
   },
   {
-    img: <Calendar className="text-teal-400" />,
+    img: <TableOfContent className="text-teal-400" />,
     title: "課表",
-    path: "/class-schedule",
+    path: "/classschedule",
   },
   {
     img: <Bus className="text-purple-400" />,
     title: "車表",
-    path: "/bus-schedule",
+    path: "/busschedule",
     isEnabled: false,
   },
   {
