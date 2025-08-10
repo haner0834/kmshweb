@@ -8,6 +8,8 @@ import Medal from "@shared/icons/medal.svg?react";
 import Ellipsis from "@shared/icons/ellipsis.svg?react";
 import FileUp from "@shared/icons/file-up.svg?react";
 import Bus from "@shared/icons/bus-front.svg?react";
+import TableOfContent from "@shared/icons/table-of-contents.svg?react";
+import CircleDash from "@shared/icons/circle-dashed.svg?react";
 import Calendar from "@shared/icons/calendar.svg?react";
 
 type CardProbs = {
@@ -23,12 +25,21 @@ const CardForMobile = ({ img, title, path, isEnabled }: CardProbs) => {
     navigate(isEnabled ? path : `/upcoming/${path.slice(1, path.length)}`);
   };
   return (
-    <div
-      onClick={toPath}
-      className="bg-base-100 w-full shadow-sm h-20 rounded-xl flex justify-center items-center px-4 gap-2"
-    >
-      {img}
-      <p className="font-semibold">{title}</p>
+    <div className="indicator w-full">
+      {!isEnabled && (
+        <span className="indicator-item badge badge-info me-2">
+          <div className="tooltip tooltip-left" data-tip="敬請期待">
+            <CircleDash className="w-4" strokeWidth={2.5} />
+          </div>
+        </span>
+      )}
+      <div
+        onClick={toPath}
+        className="bg-base-100 w-full shadow-sm h-20 rounded-xl flex justify-center items-center px-4 gap-2"
+      >
+        {img}
+        <p className="font-semibold">{title}</p>
+      </div>
     </div>
   );
 };
@@ -81,14 +92,14 @@ const CARD_ITEMS: CardProbs[] = [
     isEnabled: true,
   },
   {
-    img: <Calendar className="text-teal-400" />,
+    img: <TableOfContent className="text-teal-400" />,
     title: "課表",
-    path: "/class-schedule",
+    path: "/classschedule",
   },
   {
     img: <Bus className="text-purple-400" />,
     title: "車表",
-    path: "/bus-schedule",
+    path: "/busschedule",
     isEnabled: false,
   },
   {
@@ -102,6 +113,7 @@ const CARD_ITEMS: CardProbs[] = [
 const Home = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const { setNavbarButtonsByType } = useNavbarButtons();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setNavbarButtonsByType(["logo", "themeToggle", "inbox", "profile"]);
@@ -122,7 +134,10 @@ const Home = () => {
           ))}
         </div>
 
-        <ul className="list bg-base-100 rounded-box shadow-sm mx-4 mt-4">
+        <ul
+          onClick={() => navigate("/upcoming/calendar")}
+          className="list bg-base-100 rounded-box shadow-sm mx-4 mt-4"
+        >
           <li className="p-4 pb-2 text-xs opacity-60 tracking-wide uppercase">
             Calendar
           </li>
@@ -132,13 +147,13 @@ const Home = () => {
               <div className="text-2xl font-thin opacity-40 tabular-nums">
                 01
               </div>
-              <div className="font-light opacity-40">Feb</div>
+              <div className="font-light opacity-40">Sep</div>
             </div>
             <div>
-              <img className="size-10 rounded-box" src={logo} />
+              <Calendar className="size-10 text-indigo-400" />
             </div>
             <div className="list-col-grow">
-              <div>Midterm Exam</div>
+              <div>敬請期待</div>
               <div className="text-xs text-error uppercase font-semibold">
                 important
               </div>
