@@ -1,0 +1,8 @@
+model Feature {
+    id          Int      @id @default(autoincrement())
+    title       String
+    description String?
+    isUpcoming  Boolean  @default(true)
+    ratings     Rating[]
+    reports     Report[]
+}
