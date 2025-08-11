@@ -23,6 +23,8 @@ model Student {
     devices              Device[]
     refreshTokens        RefreshToken[]
     disciplinaryEvents   DisciplinaryEvent[]
+    ratings              Rating[]
+    reports              Report[]
 
     @@map("Student")
 }

@@ -1,0 +1,10 @@
+model Rating {
+    id        Int     @id @default(autoincrement())
+    student   Student @relation(fields: [studentId], references: [id])
+    studentId String
+    feature   Feature @relation(fields: [featureId], references: [id])
+    featureId Int
+    score     Int
+
+    @@unique([studentId, featureId], name: "unique_rating_key")
+}

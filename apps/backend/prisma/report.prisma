@@ -1,0 +1,37 @@
+model Report {
+    id          Int            @id @default(autoincrement())
+    student     Student        @relation(fields: [studentId], references: [id])
+    studentId   String
+    feature     Feature        @relation(fields: [featureId], references: [id])
+    featureId   Int
+    title       String
+    description String
+    status      ReportStatus   @default(open)
+    priority    ReportPriority @default(medium)
+    category    ReportCategory @default(bug)
+    attachments String[]
+    isAnonymous Boolean        @default(false)
+    createdAt   DateTime       @default(now())
+    updatedAt   DateTime       @updatedAt
+}
+
+enum ReportStatus {
+    open
+    inProgress
+    resolved
+    closed
+}
+
+enum ReportPriority {
+    low
+    medium
+    high
+    urgent
+}
+
+enum ReportCategory {
+    bug
+    ui
+    feature_request
+    suggestion
+}

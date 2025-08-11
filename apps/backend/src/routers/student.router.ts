@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { protect } from "../middleware/auth.middleware";
-import { getStudentProfileAndUpdateHandler, getSemestersHandler, getCurrentSemesterHandler, getExamByNameInCurrentSemesterHandler, getCurrentSemesterAndUpdateHandler, getStudentProfileHandler, getSemesterByIdHandler, getNotificationCountHandler, getNotificationsWithPaginationHandler, getDisciplinaryHandler, getSemesterSummaryHandler, getExamByIdHandler } from "../controllers/student.controller";
+import { getSemestersHandler, getCurrentSemesterHandler, getExamByNameInCurrentSemesterHandler, getCurrentSemesterAndUpdateHandler, getStudentProfileHandler, getSemesterByIdHandler, getNotificationCountHandler, getNotificationsWithPaginationHandler, getDisciplinaryHandler, getSemesterSummaryHandler, getExamByIdHandler, rateFeatureHandler, getRateScoreHandler } from "../controllers/student.controller";
 
 const router = Router()
 
@@ -19,5 +19,8 @@ router.get("/notifications/count", protect, getNotificationCountHandler)
 router.get("/notifications", protect, getNotificationsWithPaginationHandler)
 
 router.get("/disciplinary", protect, getDisciplinaryHandler)
+
+router.post("/rate", protect, rateFeatureHandler)
+router.get("/rate", protect, getRateScoreHandler)
 
 export default router
