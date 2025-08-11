@@ -37,35 +37,35 @@ const features: Omit<Feature, "id" | "ratings" | "reports">[] = [
         code: "NOTIFICATION",
         description:
             "整合系統消息、活動提醒、重要公告，確保您不會錯過任何一條重要資訊。",
-        isUpcoming: true,
+        isUpcoming: false,
     },
     {
         title: "帳號系統",
         code: "AUTH",
         description:
             "安全可靠的登入與註冊機制，保護您的資料隱私並支援多種登入方式。",
-        isUpcoming: true,
+        isUpcoming: false,
     },
     {
         title: "成績查詢",
         code: "EXAM_SCORE",
         description:
             "即時查詢各科成績，並提供成績走勢圖、平均分數等數據分析功能。",
-        isUpcoming: true,
+        isUpcoming: false,
     },
     {
         title: "獎懲紀錄",
         code: "DISCIPLINARY",
         description:
             "方便地查詢並追蹤個人獎懲紀錄，幫助您更好地管理校園行為與表現。",
-        isUpcoming: true,
+        isUpcoming: false,
     },
     {
         title: "個人檔案",
         code: "PROFILE",
         description:
-            "集中管理您的個人資訊，包括基本資料、聯絡方式與校園相關身份資料。",
-        isUpcoming: true,
+            "集中管理您的個人資訊，包括基本資料與校園相關身份資料。",
+        isUpcoming: false,
     },
 ];
 
