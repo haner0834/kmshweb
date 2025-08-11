@@ -453,3 +453,66 @@ export const getDisciplinaryHandler: AuthHandler<DisciplinaryEventDTO[]> = async
         res.internalServerError("An unexpected error occurred while getting disciplinary events.")
     }
 }
+
+export const rateFeatureHandler: AuthHandler<number> = async (req, res) => {
+    const studentId = req.student?.id
+    if (!studentId) {
+        res.noStudentId()
+        return
+    }
+
+    const { featureCode, score } = req.body
+    try {
+        await studentService.rateFeature(studentId, featureCode, score)
+        res.success(score)
+    } catch (error) {
+        if (error instanceof AppError) {
+            logger.error({
+                service: "student-service",
+                action: "rate feature",
+                error: error,
+                context: {
+                    studentId,
+                    featureCode,
+                    score,
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
+            return
+        }
+        res.internalServerError("An unexpected error occurred while rating feature.")
+    }
+}
+
+export const getRateScoreHandler: AuthHandler<number> = async (req, res) => {
+    const studentId = req.student?.id
+    if (!studentId) {
+        res.noStudentId()
+        return
+    }
+
+    const featureCode = req.query.feature as string
+    if (!featureCode) {
+        res.fail("BAD_REQUEST", "featureCode is required in query.", 400)
+    }
+
+    try {
+        const score = await studentService.getRateScore(studentId, featureCode)
+        res.success(score)
+    } catch (error) {
+        if (error instanceof AppError) {
+            logger.error({
+                service: "student-service",
+                action: "get rate score",
+                error: error,
+                context: {
+                    studentId,
+                    featureCode,
+                }
+            })
+            res.fail(error.code, error.message, error.statusCode)
+            return
+        }
+        res.internalServerError("An unexpected error occurred while rating feature.")
+    }
+}

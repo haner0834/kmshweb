@@ -11,7 +11,6 @@ import { getLoginCookieFromRedis, setLoginCookieToRedis } from "../utils/redis.u
 import { SemesterWithDetails } from "../types/crawler.senior.types";
 import { DisciplinaryEventDTO, extractStudentName, parseStudentDisciplinaryPage } from "./parser.senior/disciplinarypage.service";
 import { AppError, BadRequestError, InternalError, NotFoundError, PermissionError } from "../types/error.types";
-import e from "express";
 
 /**
  * Get login cookie from Redis if exist, otherwise re-login to the original website and get session cookie.
@@ -584,4 +583,58 @@ export const getDisciplinaryFromDb = async (studentId: string): Promise<Discipli
         type: event.type,
         count: event.count,
     }))
+}
+
+export const rateFeature = async (studentId: string, code: string, score: number) => {
+    if (score > 5 || score < 1) throw new BadRequestError("Score must be between 1 to 5")
+
+    await prisma.$transaction(async (tx) => {
+        const feature = await tx.feature.findUnique({
+            where: { code },
+            select: { id: true }
+        })
+        if (!feature) {
+            throw new NotFoundError("FEATURE")
+        }
+        const featureId = feature.id
+
+        await tx.rating.upsert({
+            where: {
+                unique_rating_key: {
+                    studentId,
+                    featureId,
+                }
+            },
+            update: {
+                score
+            },
+            create: {
+                studentId,
+                featureId,
+                score: score
+            }
+        })
+    })
+}
+
+export const getRateScore = async (studentId: string, code: string) => {
+    return await prisma.$transaction(async (tx) => {
+        const ratings = await tx.rating.findMany({
+            where: { studentId },
+            select: {
+                score: true,
+                feature: {
+                    select: {
+                        code: true
+                    }
+                }
+            }
+        })
+        const rating = ratings.find(rating => rating.feature.code === code)
+        if (!rating) {
+            throw new NotFoundError("RATING")
+        }
+
+        return rating.score
+    })
 }

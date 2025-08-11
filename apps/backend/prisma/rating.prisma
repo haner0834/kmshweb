@@ -6,5 +6,5 @@ model Rating {
     featureId Int
     score     Int
 
-    @@unique([studentId, featureId])
+    @@unique([studentId, featureId], name: "unique_rating_key")
 }
