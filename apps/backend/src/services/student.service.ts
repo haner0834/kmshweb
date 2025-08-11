@@ -591,11 +591,12 @@ export const rateFeature = async (studentId: string, code: string, score: number
     await prisma.$transaction(async (tx) => {
         const feature = await tx.feature.findUnique({
             where: { code },
-            select: { id: true }
+            select: { id: true, isUpcoming: true }
         })
         if (!feature) {
             throw new NotFoundError("FEATURE")
         }
+        if (!feature.isUpcoming) throw new BadRequestError("The feature cannot be rated.")
         const featureId = feature.id
 
         await tx.rating.upsert({
