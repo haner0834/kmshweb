@@ -494,6 +494,7 @@ export const getRateScoreHandler: AuthHandler<number> = async (req, res) => {
     const featureCode = req.query.feature as string
     if (!featureCode) {
         res.fail("BAD_REQUEST", "featureCode is required in query.", 400)
+        return
     }
 
     try {
