@@ -1,5 +1,4 @@
 import { useMediaQuery } from "react-responsive";
-import logo from "../assets/react.svg";
 import { useNavigate } from "react-router-dom";
 import { useEffect, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
