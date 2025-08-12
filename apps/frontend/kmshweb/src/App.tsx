@@ -15,6 +15,7 @@ import { SharedStudent } from "./widgets/StudentContext";
 import LoginCheck from "./pages/LoginCheck";
 import { useEffect } from "react";
 import Upcoming from "./pages/Upcoming";
+import More from "./pages/More";
 
 function App() {
   useEffect(() => {
@@ -54,6 +55,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Upcoming />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="more"
+          element={
+            <ProtectedRoute>
+              <More />
             </ProtectedRoute>
           }
         />

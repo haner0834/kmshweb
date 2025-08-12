@@ -27,6 +27,7 @@ type ModalOptions = {
   showDismissButton?: boolean;
   buttons?: ModalButton[];
   icon?: ReactNode;
+  content?: ReactNode;
 };
 
 type ModalContextType = {
@@ -83,6 +84,7 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
             isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
           }`}
         >
+          {/* Dismiss Button 保持在最外層，對兩種模式都有效 */}
           <form method="dialog">
             {modalOptions.showDismissButton && (
               <button
@@ -94,42 +96,50 @@ export const ModalProvider = ({ children }: { children: React.ReactNode }) => {
             )}
           </form>
 
-          <div className="mb-4 flex justify-center">{modalOptions.icon}</div>
+          {modalOptions.content ? (
+            modalOptions.content
+          ) : (
+            <>
+              <div className="mb-4 flex justify-center">
+                {modalOptions.icon}
+              </div>
 
-          {modalOptions.title && (
-            <h3 className={`font-bold ${!isMobile ? "text-lg" : ""}`}>
-              {modalOptions.title}
-            </h3>
+              {modalOptions.title && (
+                <h3 className={`font-bold ${!isMobile ? "text-lg" : ""}`}>
+                  {modalOptions.title}
+                </h3>
+              )}
+
+              {modalOptions.description && (
+                <p className={`py-4 w-full ${isMobile ? "opacity-50" : ""}`}>
+                  {modalOptions.description}
+                </p>
+              )}
+
+              <div className={`${isMobile ? "space-y-4" : "modal-action"}`}>
+                {modalOptions.buttons?.map((btn, idx) => (
+                  <button
+                    key={idx}
+                    className={
+                      isMobile
+                        ? `btn ${
+                            btn.role != "default"
+                              ? getStyle(btn.role ?? "default")
+                              : "bg-base-300"
+                          } rounded-4xl w-full`
+                        : `btn ${btn.style ?? ""}`
+                    }
+                    onClick={() => {
+                      btn.onClick?.();
+                      hideModal();
+                    }}
+                  >
+                    {btn.label}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
-
-          {modalOptions.description && (
-            <p className={`py-4 w-full ${isMobile ? "opacity-50" : ""}`}>
-              {modalOptions.description}
-            </p>
-          )}
-
-          <div className={`${isMobile ? "space-y-4" : "modal-action"}`}>
-            {modalOptions.buttons?.map((btn, idx) => (
-              <button
-                key={idx}
-                className={
-                  isMobile
-                    ? `btn ${
-                        btn.role != "default"
-                          ? getStyle(btn.role ?? "default")
-                          : "bg-base-300"
-                      } rounded-4xl w-full`
-                    : `btn ${btn.style ?? ""}`
-                }
-                onClick={() => {
-                  btn.onClick?.();
-                  hideModal();
-                }}
-              >
-                {btn.label}
-              </button>
-            ))}
-          </div>
         </div>
       </dialog>
     </ModalContext.Provider>

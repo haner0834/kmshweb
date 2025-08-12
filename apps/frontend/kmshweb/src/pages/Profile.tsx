@@ -20,21 +20,21 @@ import {
   getStreamText,
 } from "../utils/student";
 
-const Row = ({
+export const Row = ({
   icon,
   title = "",
   value = "",
 }: {
   icon: ReactNode;
   title?: string;
-  value?: string;
+  value?: string | ReactNode;
 }) => {
   return (
-    <li className="my-3 ms-2 items-center flex space-x-2">
+    <div className="items-center flex space-x-2">
       {icon}
       <p className="w-full flex">{title}</p>
       <div className="whitespace-nowrap">{value}</div>
-    </li>
+    </div>
   );
 };
 
@@ -81,7 +81,7 @@ const Profile = () => {
           <SectionTitle title="基本資料" />
           <Section
             content={
-              <ul>
+              <>
                 <Row
                   icon={
                     student?.gender === "male" ? (
@@ -112,14 +112,14 @@ const Profile = () => {
                     student?.enrollmentStatus ?? "enrolled"
                   )}`}
                 />
-              </ul>
+              </>
             }
           />
 
           <SectionTitle title="班級" />
           <Section
             content={
-              <ul>
+              <>
                 <Row
                   icon={<School className="w-7 h-7" strokeWidth={1.75} />}
                   title="年級"
@@ -135,7 +135,7 @@ const Profile = () => {
                   title="組別"
                   value={`${getStreamText(student?.stream ?? "all")}`}
                 />
-              </ul>
+              </>
             }
           />
         </ul>

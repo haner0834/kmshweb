@@ -8,7 +8,7 @@ const Section = ({ title = "", itemTitles = [], content }: SectionProps) => {
   return (
     <li
       key={title}
-      className="bg-base-100 mx-4 px-4 py-2 pe-6 rounded-box shadow-sm transition-all duration-300 max-w-2xl"
+      className="bg-base-100 mx-4 px-4 py-4 pe-6 rounded-box shadow-sm transition-all duration-300 max-w-2xl"
     >
       {title && (
         <div className="flex items-center my-2">
@@ -30,7 +30,7 @@ const Section = ({ title = "", itemTitles = [], content }: SectionProps) => {
         </div>
       )}
 
-      <ul className="space-y-10">{content}</ul>
+      <ul className="space-y-4">{content}</ul>
     </li>
   );
 };
