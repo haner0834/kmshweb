@@ -19,6 +19,7 @@ import More from "./pages/More";
 import ReportEditor from "./pages/ReportEditor";
 import ReportListing from "./pages/ReportListing";
 import FAQ from "./pages/FAQ";
+import Sponsor from "./pages/Sponsor";
 
 function App() {
   useEffect(() => {
@@ -67,6 +68,15 @@ function App() {
           element={
             <ProtectedRoute>
               <More />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="sponsor"
+          element={
+            <ProtectedRoute>
+              <Sponsor />
             </ProtectedRoute>
           }
         />

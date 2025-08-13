@@ -113,11 +113,12 @@ const CARD_ITEMS: CardProbs[] = [
 
 const Home = () => {
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
-  const { setNavbarButtonsByType } = useNavbarButtons();
+  const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
   const navigate = useNavigate();
 
   useEffect(() => {
     setNavbarButtonsByType(["logo", "themeToggle", "inbox", "profile"]);
+    setNavbarTitle(undefined);
   }, []);
 
   return (

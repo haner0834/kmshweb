@@ -41,10 +41,11 @@ const Link = ({
 };
 
 const More = () => {
-  const { setNavbarButtonsByType } = useNavbarButtons();
+  const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
 
   useEffect(() => {
     setNavbarButtonsByType(["back", "themeToggle"]);
+    setNavbarTitle("更多");
   }, []);
 
   // TODO: `guide`, `faq`, `report`, `feat-req`
@@ -137,7 +138,7 @@ const More = () => {
         <Section
           content={
             <>
-              <Link icon={<Handshake />} title="贊助" link=":D" />
+              <Link icon={<Handshake />} title="贊助" link="sponsor" />
             </>
           }
         />

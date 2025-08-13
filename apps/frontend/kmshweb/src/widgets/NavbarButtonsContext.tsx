@@ -14,7 +14,7 @@ type NavbarButtonsContextType = {
   setNavbarButtonsByType: (types: NavbarButtonType[]) => void;
   appendNavbarButton: (button: NavbarButton) => void;
   navbarTitle?: string;
-  setNavbarTitle: (title: string) => void;
+  setNavbarTitle: (title: string | undefined) => void;
 };
 
 const NavbarButtonsContext = createContext<
