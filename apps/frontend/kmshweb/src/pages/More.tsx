@@ -13,8 +13,8 @@ import LifeBuoy from "@shared/icons/life-buoy.svg?react";
 import Handshake from "@shared/icons/heart-handshake.svg?react";
 import GitHub from "@shared/icons/github.svg?react";
 import Scale from "@shared/icons/scale.svg?react";
-import LightBulb from "@shared/icons/lightbulb.svg?react";
 import Gremo from "@shared/icons/gremo.png";
+import Star from "@shared/icons/star.svg?react";
 
 const Link = ({
   icon,
@@ -68,10 +68,10 @@ const More = () => {
               <Link
                 icon={<MsgCircleWarning />}
                 title="問題回報"
-                link="report"
+                link="report/list"
               />
 
-              <Link icon={<LightBulb />} title="新功能許願" link="feat-req" />
+              <Link icon={<Star />} title="功能期許" link="report/list" />
             </>
           }
         />

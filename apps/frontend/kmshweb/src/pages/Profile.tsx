@@ -25,7 +25,7 @@ export const Row = ({
   title = "",
   value = "",
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   title?: string;
   value?: string | ReactNode;
 }) => {

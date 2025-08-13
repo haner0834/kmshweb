@@ -16,6 +16,8 @@ import LoginCheck from "./pages/LoginCheck";
 import { useEffect } from "react";
 import Upcoming from "./pages/Upcoming";
 import More from "./pages/More";
+import Report from "./pages/Report";
+import ReportListing from "./pages/ReportListing";
 
 function App() {
   useEffect(() => {
@@ -64,6 +66,24 @@ function App() {
           element={
             <ProtectedRoute>
               <More />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="report/new"
+          element={
+            <ProtectedRoute>
+              <Report />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="report/list"
+          element={
+            <ProtectedRoute>
+              <ReportListing />
             </ProtectedRoute>
           }
         />

@@ -13,6 +13,8 @@ type NavbarButtonsContextType = {
   appendDefaultNavbarButton: (type: NavbarButtonType) => void;
   setNavbarButtonsByType: (types: NavbarButtonType[]) => void;
   appendNavbarButton: (button: NavbarButton) => void;
+  navbarTitle?: string;
+  setNavbarTitle: (title: string) => void;
 };
 
 const NavbarButtonsContext = createContext<
@@ -98,6 +100,7 @@ export const NavbarButtonsProvider = ({
   children,
 }: NavbarButtonsProviderProps) => {
   const [navbarButtons, setNavbarButtons] = useState<NavbarButton[]>([]);
+  const [navbarTitle, setNavbarTitle] = useState<string | undefined>(undefined);
 
   const appendDefaultNavbarButton = (type: NavbarButtonType) => {
     const button = NavbarButtonTypeMap.get(type);
@@ -125,6 +128,8 @@ export const NavbarButtonsProvider = ({
         appendDefaultNavbarButton,
         setNavbarButtonsByType,
         appendNavbarButton,
+        navbarTitle,
+        setNavbarTitle,
       }}
     >
       {children}

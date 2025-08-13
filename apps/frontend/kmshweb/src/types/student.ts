@@ -30,6 +30,43 @@ export interface Student {
   credential: string;
 }
 
+export interface Feature {
+  id: string;
+  title: string;
+  code: string;
+  description: string;
+  isUpcoming: boolean;
+}
+
+export type ReportCategory =
+  | "bug"
+  | "ui"
+  | "feature_request"
+  | "suggestion";
+
+export type ReportStatus =
+  | "open"
+  | "inProgress"
+  | "resolved"
+  | "closed";
+
+export type ReportPriority =
+  | "low"
+  | "medium"
+  | "high"
+  | "urgent";
+
+export interface Report {
+  id: string;
+  title: string;
+  description: string;
+  category: ReportCategory;
+  featureId: string;
+  feature?: Feature;
+  status: ReportStatus;
+  createdAt: Date;
+}
+
 export type NotificationType = "update" | "warning" | "other";
 
 export type NotificationIcon = "score" | "auth" | "bus" | "disciplinary";
