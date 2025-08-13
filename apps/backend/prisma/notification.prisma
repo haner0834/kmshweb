@@ -10,6 +10,9 @@ model Notification {
     icon   NotificationIcon @default(none)
 
     payload Json?
+    route   String @default("")
+    params  Json?
+    queries Json?
 
     createdAt DateTime @default(now())
 

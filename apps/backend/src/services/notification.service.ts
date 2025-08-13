@@ -1,5 +1,6 @@
 import prisma from "../config/database"
 import { Device, DeviceType, Prisma, NotificationType, NotificationIcon } from "@prisma/client"
+import { NotFoundError, PermissionError } from "../types/error.types"
 
 /**
  * A placeholder for sending push notification.
@@ -36,7 +37,9 @@ const createInAppNotification = async (
     type: NotificationType,
     icon: NotificationIcon,
     body: string,
-    payload: Prisma.JsonObject
+    payload: Prisma.JsonObject,
+    route?: string,
+    params?: Prisma.JsonObject,
 ) => {
     await prisma.notification.create({
         data: {
@@ -45,6 +48,8 @@ const createInAppNotification = async (
             type,
             icon,
             body,
+            route,
+            params,
             payload
         }
     })
@@ -126,4 +131,35 @@ export const getNotificationCount = async (studentId: string, isRead: boolean | 
     return await prisma.notification.count({
         where: { studentId, isRead }
     })
+}
+
+export const readNotification = async (studentId: string, notificationId: string) => {
+    const updated = await prisma.notification.updateMany({
+        where: {
+            id: notificationId,
+            studentId,
+        },
+        data: {
+            isRead: true,
+        },
+    });
+
+    if (updated.count === 0) {
+        throw new PermissionError();
+    }
+}
+
+export const getNotificationById = async (studentId: string, notificationId: string) => {
+    const notification = await prisma.notification.findUnique({
+        where: { id: notificationId }
+    })
+
+    if (!notification) {
+        throw new NotFoundError("NOTIFICATION")
+    }
+    if (notification.studentId !== studentId) {
+        throw new PermissionError()
+    }
+
+    return notification
 }
