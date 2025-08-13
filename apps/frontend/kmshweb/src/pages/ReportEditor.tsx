@@ -19,11 +19,16 @@ export const getReportCategoryText = (category: ReportCategory) => {
   }
 };
 
-const Report = () => {
+const ReportEditor = () => {
   const { setNavbarButtonsByType } = useNavbarButtons();
   const [features, setFeatures] = useState<Feature[]>([]);
   const { showModal } = useModal();
-  const [categories] = useState<ReportCategory[]>(["bug", "ui"]);
+  const [categories] = useState<ReportCategory[]>([
+    "bug",
+    "ui",
+    "feature_request",
+    "suggestion",
+  ]);
 
   const [problemTitle, setProblemTitle] = useState("");
   const [problemDescription, setProblemDescription] = useState("");
@@ -144,7 +149,7 @@ const Report = () => {
         <Section
           content={
             <Row
-              title="您在哪部分遇到了問題"
+              title="回報類別為"
               value={
                 <select
                   className={`select w-auto ${
@@ -210,4 +215,4 @@ const Report = () => {
   );
 };
 
-export default Report;
+export default ReportEditor;

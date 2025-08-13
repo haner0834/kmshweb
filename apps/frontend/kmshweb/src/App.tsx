@@ -16,7 +16,7 @@ import LoginCheck from "./pages/LoginCheck";
 import { useEffect } from "react";
 import Upcoming from "./pages/Upcoming";
 import More from "./pages/More";
-import Report from "./pages/Report";
+import ReportEditor from "./pages/ReportEditor";
 import ReportListing from "./pages/ReportListing";
 
 function App() {
@@ -74,7 +74,7 @@ function App() {
           path="report/new"
           element={
             <ProtectedRoute>
-              <Report />
+              <ReportEditor />
             </ProtectedRoute>
           }
         />

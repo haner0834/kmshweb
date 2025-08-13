@@ -13,7 +13,7 @@ import CircleX from "@shared/icons/circle-x.svg?react";
 import CircleCheck from "@shared/icons/circle-check.svg?react";
 import CircleMinus from "@shared/icons/circle-minus.svg?react";
 import Plus from "@shared/icons/plus.svg?react";
-import { getReportCategoryText } from "./Report";
+import { getReportCategoryText } from "./ReportEditor";
 import Frame from "@shared/icons/frame.svg?react";
 import Star from "@shared/icons/star.svg?react";
 import LightBulb from "@shared/icons/lightbulb.svg?react";
@@ -73,7 +73,7 @@ const ReportListing = () => {
 
   useEffect(() => {
     setNavbarButtonsByType(["back", "themeToggle"]);
-    setNavbarTitle("問題回報");
+    setNavbarTitle("回報");
 
     setReports([
       {
