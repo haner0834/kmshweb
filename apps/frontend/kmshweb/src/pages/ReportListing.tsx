@@ -60,7 +60,7 @@ export const ReportCategoryIcon = ({
     case "feature_request":
       return <Star width={12} />;
     case "suggestion":
-      return <LightBulb width={12} />;
+      return <Lightbulb width={12} />;
   }
 };
 
