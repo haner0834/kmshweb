@@ -50,7 +50,7 @@ const More = () => {
   // TODO: `guide`, `faq`, `report`, `feat-req`
   return (
     <div className="min-h-screen bg-base-300 pt-16">
-      <ul>
+      <ul className="pt-4 mx-auto w-full max-w-xl">
         <SectionTitle title="聯絡與回饋" />
         <Section
           content={
