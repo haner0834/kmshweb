@@ -69,9 +69,9 @@ const Upcoming = () => {
   const showDescription = () => {
     showModal({
       showDismissButton: true,
-      title: "向功能評分",
+      title: "留下您的期待值",
       description:
-        "您的寶貴意見能幫助我們持續改進！請為尚未推出的功能留下評分，讓我們了解您的期待與需求。",
+        "您的寶貴意見能幫助我們持續改進！請為尚未推出的功能留下期待值，讓我們了解您的期待與需求。",
     });
   };
 
