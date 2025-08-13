@@ -29,6 +29,7 @@
     "paths": {
       "@shared/*": ["../../../../../shared/*"],
       "@assets/*": ["../assets/*"],
+      "@icons": ["../generated/icons"]
     }
   },
   "include": ["src"]

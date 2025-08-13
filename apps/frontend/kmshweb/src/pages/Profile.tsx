@@ -1,16 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import Person from "@shared/icons/person.svg?react";
 import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
-import IdCard from "@shared/icons/id-card.svg?react";
-import CalendarCheck from "@shared/icons/calendar-check.svg?react";
-import GraduationHat from "@shared/icons/graduation-cap.svg?react";
-import Venus from "@shared/icons/venus.svg?react";
-import Mars from "@shared/icons/mars.svg?react";
-import School from "@shared/icons/school.svg?react";
-import Users from "@shared/icons/users.svg?react";
-import Hash from "@shared/icons/hash.svg?react";
 import type { Student } from "../types/student";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import {
@@ -19,22 +10,33 @@ import {
   getEnrollmentStatusText,
   getStreamText,
 } from "../utils/student";
+import {
+  Person,
+  IdCard,
+  CalendarCheck,
+  GraduationCap as GraduationHat,
+  Venus,
+  Mars,
+  School,
+  Users,
+  Hash,
+} from "@icons";
 
-const Row = ({
+export const Row = ({
   icon,
   title = "",
   value = "",
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
   title?: string;
-  value?: string;
+  value?: string | ReactNode;
 }) => {
   return (
-    <li className="my-3 ms-2 items-center flex space-x-2">
+    <div className="items-center flex space-x-2">
       {icon}
       <p className="w-full flex">{title}</p>
       <div className="whitespace-nowrap">{value}</div>
-    </li>
+    </div>
   );
 };
 
@@ -81,7 +83,7 @@ const Profile = () => {
           <SectionTitle title="基本資料" />
           <Section
             content={
-              <ul>
+              <>
                 <Row
                   icon={
                     student?.gender === "male" ? (
@@ -112,14 +114,14 @@ const Profile = () => {
                     student?.enrollmentStatus ?? "enrolled"
                   )}`}
                 />
-              </ul>
+              </>
             }
           />
 
           <SectionTitle title="班級" />
           <Section
             content={
-              <ul>
+              <>
                 <Row
                   icon={<School className="w-7 h-7" strokeWidth={1.75} />}
                   title="年級"
@@ -135,7 +137,7 @@ const Profile = () => {
                   title="組別"
                   value={`${getStreamText(student?.stream ?? "all")}`}
                 />
-              </ul>
+              </>
             }
           />
         </ul>

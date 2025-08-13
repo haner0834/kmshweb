@@ -1,10 +1,12 @@
 import { Suspense, useEffect, useState } from "react";
 import { type Notification, type NotificationIcon } from "../types/student";
 import { useAuthFetch } from "../auth/useAuthFetch";
-import TextFile from "@shared/icons/file_text.svg?react";
-import ShieldAlert from "@shared/icons/shield-alert.svg?react";
-import Bus from "@shared/icons/bus-front.svg?react";
-import Award from "@shared/icons/award.svg?react";
+import {
+  FileText as TextFile,
+  ShieldAlert,
+  BusFront as Bus,
+  Award,
+} from "@icons";
 
 export const NotificationInboxIcon = ({
   unreadCount,

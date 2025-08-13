@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 import { useEffect, type ReactNode } from "react";
-import Calendar from "@shared/icons/calendar_clock.svg?react";
+import { Calendar } from "../generated/icons";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import { useModal } from "../widgets/ModalContext";
 

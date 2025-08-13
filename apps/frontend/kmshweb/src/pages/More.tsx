@@ -1,0 +1,154 @@
+import { useEffect } from "react";
+import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
+import Section from "../widgets/Section";
+import SectionTitle from "../widgets/SectionTitle";
+import { Row } from "./Profile";
+import {
+  MessageCircleWarning as MsgCircleWarning,
+  ChevronRight,
+  Mail,
+  CircleQuestionMark as Question,
+  Instagram,
+  ShieldCheck,
+  LifeBuoy,
+  HeartHandshake as Handshake,
+  Github as GitHub,
+  Scale,
+  Gremo,
+  Star,
+} from "@icons";
+
+const Link = ({
+  icon,
+  title,
+  link,
+}: {
+  icon?: React.ReactNode;
+  title?: string;
+  link?: string;
+}) => {
+  return (
+    <li>
+      <a href={link}>
+        <Row
+          icon={icon}
+          title={title}
+          value={<ChevronRight className="w-6 h-6" />}
+        />
+      </a>
+    </li>
+  );
+};
+
+const More = () => {
+  const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
+
+  useEffect(() => {
+    setNavbarButtonsByType(["back", "themeToggle"]);
+    setNavbarTitle("更多");
+  }, []);
+
+  // TODO: `guide`, `faq`, `report`, `feat-req`
+  return (
+    <div className="min-h-screen bg-base-300 pt-16">
+      <ul className="pt-4 mx-auto w-full max-w-xl">
+        <SectionTitle title="聯絡與回饋" />
+        <Section
+          content={
+            <>
+              <Link
+                icon={<Instagram />}
+                title="Instagram"
+                link="https://www.instagram.com/coffee_.roll?igsh=MWt0eGVub3B4aTV0Zw%3D%3D"
+              />
+
+              <Link
+                icon={<Mail />}
+                title="Email"
+                link="mailto:coffeeroll901@gmail.com"
+              />
+
+              <Link
+                icon={<MsgCircleWarning />}
+                title="問題回報"
+                link="report/list"
+              />
+
+              <Link icon={<Star />} title="功能期許" link="report/list" />
+            </>
+          }
+        />
+
+        <SectionTitle title="使用" />
+        <Section
+          content={
+            <>
+              <Link icon={<Question />} title="常見問題" link="faq" />
+              <Link icon={<LifeBuoy />} title="使用說明" link="guide" />
+            </>
+          }
+        />
+
+        <SectionTitle title="隱私" />
+        <Section
+          content={
+            <>
+              <Link
+                icon={<ShieldCheck />}
+                title="隱私政策"
+                link="/privacy-policy.html"
+              />
+            </>
+          }
+        />
+
+        <SectionTitle title="其他產品" />
+        <Section
+          content={
+            <>
+              <Link
+                icon={<img src={Gremo} className="w-6 rounded-full" />}
+                title="Gremo"
+                link="https://apps.apple.com/tw/app/gremo/id6450648780"
+              />
+            </>
+          }
+        />
+
+        <SectionTitle title="open source" />
+        <Section
+          content={
+            <>
+              <Link
+                icon={<GitHub />}
+                title="程式碼開源"
+                link="https://github.com/haner0834/kmshweb"
+              />
+
+              <Link
+                icon={<Scale />}
+                title="開源授權（Licence）"
+                link="https://github.com/haner0834/kmshweb/blob/main/LICENSE"
+              />
+            </>
+          }
+        />
+
+        <SectionTitle title="當個好人" />
+        <Section
+          content={
+            <>
+              <Link icon={<Handshake />} title="贊助" link="sponsor" />
+            </>
+          }
+        />
+
+        <p className="mt-20 flex justify-center text-center text-xs opacity-40">
+          © 2025 林禹澔. All rights reserved.
+        </p>
+      </ul>
+    </div>
+  );
+};
+
+export default More;

@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "fs-extra": "^11.3.1"
+  },
+  "devDependencies": {
+    "@types/chokidar": "^1.7.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^24.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "generate-icons": "ts-node scripts/generate-icons.ts"
+  }
+}

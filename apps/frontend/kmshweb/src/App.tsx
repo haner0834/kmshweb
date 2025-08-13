@@ -15,6 +15,11 @@ import { SharedStudent } from "./widgets/StudentContext";
 import LoginCheck from "./pages/LoginCheck";
 import { useEffect } from "react";
 import Upcoming from "./pages/Upcoming";
+import More from "./pages/More";
+import ReportEditor from "./pages/ReportEditor";
+import ReportListing from "./pages/ReportListing";
+import FAQ from "./pages/FAQ";
+import Sponsor from "./pages/Sponsor";
 
 function App() {
   useEffect(() => {
@@ -54,6 +59,51 @@ function App() {
           element={
             <ProtectedRoute>
               <Upcoming />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="more"
+          element={
+            <ProtectedRoute>
+              <More />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="sponsor"
+          element={
+            <ProtectedRoute>
+              <Sponsor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="faq"
+          element={
+            <ProtectedRoute>
+              <FAQ />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="report/new"
+          element={
+            <ProtectedRoute>
+              <ReportEditor />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="report/list"
+          element={
+            <ProtectedRoute>
+              <ReportListing />
             </ProtectedRoute>
           }
         />

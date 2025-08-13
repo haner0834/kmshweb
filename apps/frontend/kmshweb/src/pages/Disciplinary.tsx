@@ -3,12 +3,14 @@ import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import type { DisciplinaryEvent, DisciplinaryLevel } from "../types/student";
-import ThumbUp from "@shared/icons/thumbs_up.svg?react";
-import ThumbDown from "@shared/icons/thumbs_down.svg?react";
-import Star from "@shared/icons/star.svg?react";
-import Medal from "@shared/icons/medal.svg?react";
-import AlertTriangle from "@shared/icons/triangle_alert.svg?react";
-import AlertCircle from "@shared/icons/circle_alert.svg?react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Star,
+  Medal,
+  TriangleAlert,
+  CircleAlert,
+} from "@icons";
 
 const disciplinaryEvents: DisciplinaryEvent[] = [
   //   {
@@ -63,17 +65,17 @@ const disciplinaryEvents: DisciplinaryEvent[] = [
 
 const getIcon = (level: DisciplinaryLevel) => {
   if (level === "commendation") {
-    return <ThumbUp className="w-8" />;
+    return <ThumbsUp className="w-8" />;
   } else if (level === "minorMerit") {
     return <Star className="w-8" />;
   } else if (level === "majorMerit") {
     return <Medal className="w-8 pt-0.5" />;
   } else if (level === "warning") {
-    return <ThumbDown className="w-8 pt-1" />;
+    return <ThumbsDown className="w-8 pt-1" />;
   } else if (level === "minorDemerit") {
-    return <AlertCircle className="w-8" />;
+    return <CircleAlert className="w-8" />;
   } else if (level === "majorDemerit") {
-    return <AlertTriangle className="w-8 stroke-2" />;
+    return <TriangleAlert className="w-8 stroke-2" />;
   }
 
   return null;

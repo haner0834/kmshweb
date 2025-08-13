@@ -8,7 +8,7 @@ import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
 import Section from "../widgets/Section";
 import { useNavigate } from "react-router-dom";
 import { useAuthFetch } from "../auth/useAuthFetch";
-import Info from "@shared/icons/info.svg?react";
+import { Info } from "@icons";
 import { useModal } from "../widgets/ModalContext";
 
 const SemesterContent = ({ semester }: { semester: SemesterSummary }) => {

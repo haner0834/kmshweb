@@ -1,4 +1,4 @@
-import Person from "@shared/icons/person.svg?react";
+import { Person } from "@icons";
 import { useNavigate } from "react-router-dom";
 
 const ProfileButton = () => {

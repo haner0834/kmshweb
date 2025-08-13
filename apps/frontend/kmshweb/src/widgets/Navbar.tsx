@@ -25,7 +25,7 @@ const Navbar = () => {
   const [positionedButtons, setPositionedButtons] =
     useState<Map<NavbarButtonPlacement, NavbarButton[]>>();
 
-  const { navbarButtons } = useNavbarButtons();
+  const { navbarButtons, navbarTitle } = useNavbarButtons();
 
   useEffect(() => {
     const map = new Map<NavbarButtonPlacement, NavbarButton[]>();
@@ -48,9 +48,13 @@ const Navbar = () => {
         </div>
 
         <div className="navbar-center">
-          {(positionedButtons?.get("center") ?? []).map((button) => (
-            <div key={button.id}>{button.content}</div>
-          ))}
+          {navbarTitle ? (
+            <p className="font-semibold">{navbarTitle}</p>
+          ) : (
+            (positionedButtons?.get("center") ?? []).map((button) => (
+              <div key={button.id}>{button.content}</div>
+            ))
+          )}
         </div>
 
         <div className="navbar-end">

@@ -1,7 +1,4 @@
 import { useStudent } from "../widgets/StudentContext";
-import Person from "@shared/icons/person.svg?react";
-import IDCard from "@shared/icons/id-card.svg?react";
-import GraduationCap from "@shared/icons/graduation-cap.svg?react";
 import { getEnrollmentStatusText, getGradeText } from "../utils/student";
 import { useEffect } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
@@ -12,6 +9,7 @@ import { getErrorMessage } from "../utils/errors";
 import { useModal } from "../widgets/ModalContext";
 import { useAuth } from "../auth/AuthContext";
 import type { Student } from "../types/student";
+import { Person, IdCard as IDCard, GraduationCap } from "@icons";
 
 const LoginCheck = () => {
   const { student, id, password, trustDevice, clearData } = useStudent();

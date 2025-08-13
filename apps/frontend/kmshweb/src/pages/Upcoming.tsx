@@ -5,14 +5,16 @@ import {
   useNavbarButtons,
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
-import FileUp from "@shared/icons/file-up.svg?react";
-import Calendar from "@shared/icons/calendar.svg?react";
-import TableOfContent from "@shared/icons/table-of-contents.svg?react";
-import Bus from "@shared/icons/bus-front.svg?react";
-import Info from "@shared/icons/info.svg?react";
 import { useModal } from "../widgets/ModalContext";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import confetti from "canvas-confetti";
+import {
+  FileUp,
+  Calendar,
+  TableOfContents as TableOfContent,
+  BusFront as Bus,
+  Info,
+} from "@icons";
 
 const map = {
   learninghistory: {
@@ -67,9 +69,9 @@ const Upcoming = () => {
   const showDescription = () => {
     showModal({
       showDismissButton: true,
-      title: "向功能評分",
+      title: "留下您的期待值",
       description:
-        "您的寶貴意見能幫助我們持續改進！請為尚未推出的功能留下評分，讓我們了解您的期待與需求。",
+        "您的寶貴意見能幫助我們持續改進！請為尚未推出的功能留下期待值，讓我們了解您的期待與需求。",
     });
   };
 
