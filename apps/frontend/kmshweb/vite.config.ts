@@ -21,6 +21,7 @@ export default defineConfig({
     alias: {
       "@assets": "../assets",
       "@shared": "../../../../../shared",
+      "@icons": "../generated/icons"
     },
   },
 });

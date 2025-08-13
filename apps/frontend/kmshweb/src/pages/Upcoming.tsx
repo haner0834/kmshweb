@@ -5,14 +5,16 @@ import {
   useNavbarButtons,
 } from "../widgets/NavbarButtonsContext";
 import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
-import FileUp from "@shared/icons/file-up.svg?react";
-import Calendar from "@shared/icons/calendar.svg?react";
-import TableOfContent from "@shared/icons/table-of-contents.svg?react";
-import Bus from "@shared/icons/bus-front.svg?react";
-import Info from "@shared/icons/info.svg?react";
 import { useModal } from "../widgets/ModalContext";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import confetti from "canvas-confetti";
+import {
+  FileUp,
+  Calendar,
+  TableOfContents as TableOfContent,
+  BusFront as Bus,
+  Info,
+} from "@icons";
 
 const map = {
   learninghistory: {

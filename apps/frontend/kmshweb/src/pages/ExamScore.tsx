@@ -9,9 +9,7 @@ import {
 import "../App.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useModal } from "../widgets/ModalContext";
-import MenuIcon from "@shared/icons/menu.svg?react";
-import ChevronRight from "@shared/icons/chevron_right.svg?react";
-import CheckMark from "@shared/icons/checkmark.svg?react";
+import { Menu as MenuIcon, ChevronRight, Checkmark } from "../generated/icons";
 import {
   NavbarButtonTypeMap,
   useNavbarButtons,
@@ -274,7 +272,7 @@ const DisplayDataDropdown = ({
             <div className="flex items-center justify-between w-full">
               <p className="flex-1 text-start">{getDisplayDataName(data)}</p>
 
-              {data === displayData && <CheckMark className="w-4 h-4" />}
+              {data === displayData && <Checkmark className="w-4 h-4" />}
             </div>
           </li>
         ))}

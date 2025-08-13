@@ -6,18 +6,20 @@ import {
   type ReportCategory,
   type ReportStatus,
 } from "../types/student";
-import Clock3 from "@shared/icons/clock-3.svg?react";
-import Blocks from "@shared/icons/blocks.svg?react";
-import Bug from "@shared/icons/bug.svg?react";
-import CircleX from "@shared/icons/circle-x.svg?react";
-import CircleCheck from "@shared/icons/circle-check.svg?react";
-import CircleMinus from "@shared/icons/circle-minus.svg?react";
-import Plus from "@shared/icons/plus.svg?react";
 import { getReportCategoryText } from "./ReportEditor";
-import Frame from "@shared/icons/frame.svg?react";
-import Star from "@shared/icons/star.svg?react";
-import LightBulb from "@shared/icons/lightbulb.svg?react";
 import { useNavigate } from "react-router-dom";
+import {
+  Clock3,
+  Blocks,
+  Bug,
+  CircleX,
+  CircleCheck,
+  CircleMinus,
+  Plus,
+  Frame,
+  Star,
+  Lightbulb,
+} from "@icons";
 
 const ReportStatusIcon = ({ status }: { status: ReportStatus }) => {
   switch (status) {

@@ -1,16 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import Person from "@shared/icons/person.svg?react";
 import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
-import IdCard from "@shared/icons/id-card.svg?react";
-import CalendarCheck from "@shared/icons/calendar-check.svg?react";
-import GraduationHat from "@shared/icons/graduation-cap.svg?react";
-import Venus from "@shared/icons/venus.svg?react";
-import Mars from "@shared/icons/mars.svg?react";
-import School from "@shared/icons/school.svg?react";
-import Users from "@shared/icons/users.svg?react";
-import Hash from "@shared/icons/hash.svg?react";
 import type { Student } from "../types/student";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import {
@@ -19,6 +10,17 @@ import {
   getEnrollmentStatusText,
   getStreamText,
 } from "../utils/student";
+import {
+  Person,
+  IdCard,
+  CalendarCheck,
+  GraduationCap as GraduationHat,
+  Venus,
+  Mars,
+  School,
+  Users,
+  Hash,
+} from "@icons";
 
 export const Row = ({
   icon,

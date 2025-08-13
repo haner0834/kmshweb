@@ -3,18 +3,20 @@ import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
 import { Row } from "./Profile";
-import MsgCircleWarning from "@shared/icons/message-circle-warning.svg?react";
-import ChevronRight from "@shared/icons/chevron_right.svg?react";
-import Mail from "@shared/icons/mail.svg?react";
-import Question from "@shared/icons/circle-question-mark.svg?react";
-import Instagram from "@shared/icons/instagram.svg?react";
-import ShieldCheck from "@shared/icons/shield-check.svg?react";
-import LifeBuoy from "@shared/icons/life-buoy.svg?react";
-import Handshake from "@shared/icons/heart-handshake.svg?react";
-import GitHub from "@shared/icons/github.svg?react";
-import Scale from "@shared/icons/scale.svg?react";
-import Gremo from "@shared/icons/gremo.png";
-import Star from "@shared/icons/star.svg?react";
+import {
+  MessageCircleWarning as MsgCircleWarning,
+  ChevronRight,
+  Mail,
+  CircleQuestionMark as Question,
+  Instagram,
+  ShieldCheck,
+  LifeBuoy,
+  HeartHandshake as Handshake,
+  Github as GitHub,
+  Scale,
+  Gremo,
+  Star,
+} from "@icons";
 
 const Link = ({
   icon,

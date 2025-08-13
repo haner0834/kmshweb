@@ -2,14 +2,16 @@ import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 import { useEffect, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import TextFile from "@shared/icons/file_text.svg?react";
-import Medal from "@shared/icons/medal.svg?react";
-import Ellipsis from "@shared/icons/ellipsis.svg?react";
-import FileUp from "@shared/icons/file-up.svg?react";
-import Bus from "@shared/icons/bus-front.svg?react";
-import TableOfContent from "@shared/icons/table-of-contents.svg?react";
-import CircleDash from "@shared/icons/circle-dashed.svg?react";
-import Calendar from "@shared/icons/calendar.svg?react";
+import {
+  FileText as TextFile,
+  Medal,
+  Ellipsis,
+  FileUp,
+  BusFront as Bus,
+  TableOfContents as TableOfContent,
+  CircleDashed as CircleDash,
+  Calendar,
+} from "@icons";
 
 type CardProbs = {
   img: ReactNode;
