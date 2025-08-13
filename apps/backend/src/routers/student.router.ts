@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { protect } from "../middleware/auth.middleware";
-import { getSemestersHandler, getCurrentSemesterHandler, getExamByNameInCurrentSemesterHandler, getCurrentSemesterAndUpdateHandler, getStudentProfileHandler, getSemesterByIdHandler, getNotificationCountHandler, getNotificationsWithPaginationHandler, getDisciplinaryHandler, getSemesterSummaryHandler, getExamByIdHandler, rateFeatureHandler, getRateScoreHandler } from "../controllers/student.controller";
+import { getSemestersHandler, getCurrentSemesterHandler, getExamByNameInCurrentSemesterHandler, getCurrentSemesterAndUpdateHandler, getStudentProfileHandler, getSemesterByIdHandler, getDisciplinaryHandler, getSemesterSummaryHandler, getExamByIdHandler, rateFeatureHandler, getRateScoreHandler } from "../controllers/student.controller";
+import { getNotificationByIdHandler, getNotificationCountHandler, getNotificationsWithPaginationHandler, readNotificationHandler } from "../controllers/notification.controller";
 
 const router = Router()
 
@@ -17,6 +18,8 @@ router.get("/summary/semesters", protect, getSemesterSummaryHandler)
 
 router.get("/notifications/count", protect, getNotificationCountHandler)
 router.get("/notifications", protect, getNotificationsWithPaginationHandler)
+router.get("/notifications/:id", protect, getNotificationByIdHandler)
+router.patch("/notifications/:id/read", protect, readNotificationHandler)
 
 router.get("/disciplinary", protect, getDisciplinaryHandler)
 
