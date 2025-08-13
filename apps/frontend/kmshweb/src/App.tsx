@@ -18,6 +18,7 @@ import Upcoming from "./pages/Upcoming";
 import More from "./pages/More";
 import ReportEditor from "./pages/ReportEditor";
 import ReportListing from "./pages/ReportListing";
+import FAQ from "./pages/FAQ";
 
 function App() {
   useEffect(() => {
@@ -66,6 +67,15 @@ function App() {
           element={
             <ProtectedRoute>
               <More />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="faq"
+          element={
+            <ProtectedRoute>
+              <FAQ />
             </ProtectedRoute>
           }
         />
