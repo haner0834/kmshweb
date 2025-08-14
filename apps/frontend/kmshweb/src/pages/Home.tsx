@@ -1,4 +1,4 @@
-import { useMediaQuery } from "react-responsive";
+// import { useMediaQuery } from "react-responsive";
 import { useNavigate } from "react-router-dom";
 import { useEffect, type ReactNode } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
@@ -45,32 +45,26 @@ const CardForMobile = ({ img, title, path, isEnabled }: CardProbs) => {
   );
 };
 
-const CardForBigScreen = ({ img, title }: CardProbs) => {
-  return (
-    <div className="card bg-base-100 w-50 shadow-sm">
-      <figure>
-        {/* <img src={img} alt="Shoes" /> */}
-        {img}
-      </figure>
-      <div className="card-body bg-neutral rounded-b-2xl">
-        <h2 className="card-title text-base-100">{title}</h2>
-      </div>
-    </div>
-  );
-};
+// const CardForBigScreen = ({ img, title }: CardProbs) => {
+//   return (
+//     <div className="card bg-base-100 w-50 shadow-sm">
+//       <figure>
+//         {/* <img src={img} alt="Shoes" /> */}
+//         {img}
+//       </figure>
+//       <div className="card-body bg-neutral rounded-b-2xl">
+//         <h2 className="card-title text-base-100">{title}</h2>
+//       </div>
+//     </div>
+//   );
+// };
 
+// TODO: Finish this shit
 const Card = ({ img, title, path, isEnabled = false }: CardProbs) => {
-  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
+  // const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
 
-  return isMobile ? (
+  return (
     <CardForMobile img={img} title={title} path={path} isEnabled={isEnabled} />
-  ) : (
-    <CardForBigScreen
-      img={img}
-      title={title}
-      path={path}
-      isEnabled={isEnabled}
-    />
   );
 };
 
@@ -112,7 +106,6 @@ const CARD_ITEMS: CardProbs[] = [
 ];
 
 const Home = () => {
-  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
   const navigate = useNavigate();
 
@@ -123,7 +116,7 @@ const Home = () => {
 
   return (
     <div className="w-screen min-h-screen flex justify-center bg-base-300">
-      <div className={`${isMobile ? "w-screen" : ""} pb-8`}>
+      <div className={`max-w-3xl w-full pb-8`}>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-20 p-4">
           {CARD_ITEMS.map((item) => (
             <Card
