@@ -85,7 +85,7 @@ export const notifyOtherTrustedDevices = async (
         deviceName: newDevice.userAgent || 'Unknown Device',
     }
 
-    const route = "/notifications/:id/new-login"
+    const route = "/:id/new-login"
 
     await createInAppNotification(studentId, title, "warn", "auth", body, notificationPayload, route)
 

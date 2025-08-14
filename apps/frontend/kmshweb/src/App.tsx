@@ -20,6 +20,7 @@ import ReportEditor from "./pages/ReportEditor";
 import ReportListing from "./pages/ReportListing";
 import FAQ from "./pages/FAQ";
 import Sponsor from "./pages/Sponsor";
+import NewLogin from "./pages/NewLogin";
 
 function App() {
   useEffect(() => {
@@ -59,6 +60,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Upcoming />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path=":id/new-login"
+          element={
+            <ProtectedRoute>
+              <NewLogin />
             </ProtectedRoute>
           }
         />

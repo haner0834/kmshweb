@@ -173,7 +173,14 @@ const InboxDropdownContent = () => {
           const newItems = json.data.filter(
             (n: Notification) => !existingIds.has(n.id)
           );
-          return [...prev, ...newItems];
+          const newNotifications = newItems.map((notification: any) => {
+            const a = {
+              ...notification,
+              path: notification.route.replace(":id", notification.id),
+            };
+            return a;
+          });
+          return [...prev, ...newNotifications];
         });
         setHasMore(json.meta.page < json.meta.totalPages); // if less than pageSize, no more data
         setLoading(false);
