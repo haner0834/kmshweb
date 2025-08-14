@@ -40,6 +40,7 @@ const createInAppNotification = async (
     payload: Prisma.JsonObject,
     route?: string,
     params?: Prisma.JsonObject,
+    queries?: Prisma.JsonObject,
 ) => {
     await prisma.notification.create({
         data: {
@@ -50,6 +51,7 @@ const createInAppNotification = async (
             body,
             route,
             params,
+            queries,
             payload
         }
     })
@@ -83,7 +85,9 @@ export const notifyOtherTrustedDevices = async (
         deviceName: newDevice.userAgent || 'Unknown Device',
     }
 
-    await createInAppNotification(studentId, title, "warn", "auth", body, notificationPayload)
+    const route = "/notifications/:id/new-login"
+
+    await createInAppNotification(studentId, title, "warn", "auth", body, notificationPayload, route)
 
     for (const device of otherTrustedDevices) {
         if (device.pushToken && device.type !== "web") {
