@@ -151,7 +151,6 @@ const InboxDropdownContent = () => {
     const json = await authedFetch(
       "http://localhost:3000/api/student/notifications/count?role=unread"
     );
-    console.log(json);
     setUnreadCount(json.data);
   };
 
