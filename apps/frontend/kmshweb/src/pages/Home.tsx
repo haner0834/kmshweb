@@ -116,8 +116,8 @@ const Home = () => {
 
   return (
     <div className="w-screen min-h-screen flex justify-center bg-base-300">
-      <div className={`max-w-3xl w-full pb-8`}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-20 p-4">
+      <div className="max-w-3xl w-full">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-18 p-4">
           {CARD_ITEMS.map((item) => (
             <Card
               key={item.title}
