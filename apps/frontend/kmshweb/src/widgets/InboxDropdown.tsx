@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { type Notification, type NotificationIcon } from "../types/student";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import {
@@ -61,9 +61,43 @@ const getIcon = (icon: NotificationIcon) => {
   }
 };
 
-const NotificationItem = ({ notification }: { notification: Notification }) => {
+const NotificationItem = ({
+  notification,
+  readNotification,
+}: {
+  notification: Notification;
+  readNotification: (id: string) => void;
+}) => {
+  const { authedFetch } = useAuthFetch();
+  const ref = useRef<HTMLLIElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          if (!notification.isRead) {
+            authedFetch(
+              `http://localhost:3000/api/student/notifications/${notification.id}/read`,
+              {
+                method: "PATCH",
+              }
+            );
+            setTimeout(() => {
+              readNotification(notification.id);
+              observer.disconnect(); // 只跑一次
+            }, 1000);
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <li>
+    <li ref={ref}>
       <div className="flex items-center justify-between w-full px-2 py-1 my-1">
         {getIcon(notification.icon)}
 
@@ -88,37 +122,68 @@ const InboxDropdownContent = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { authedFetch } = useAuthFetch();
   const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState<number | null>();
 
-  const updateNotifications = async () => {
-    if (!isLastPage) {
-      const json = await authedFetch(
-        `http://localhost:3000/api/student/notifications?page=${page}&pagesize=10`
-      );
-      setNotifications([...notifications, ...json.data]);
-      if (json.meta.page < json.meta.totalPages) {
-        // There are more pages
-        setPage((prev) => prev + 1);
-      } else {
-        setIsLastPage(true);
-      }
-    }
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastNotificationRef = useCallback(
+    (node: any) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((prev) => prev + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore]
+  );
+
+  const readNotification = async (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  };
+
+  const getNotificationCount = async () => {
+    const json = await authedFetch(
+      "http://localhost:3000/api/student/notifications/count?role=unread"
+    );
+    console.log(json);
+    setUnreadCount(json.data);
   };
 
   useEffect(() => {
-    const a = async () => {
-      const json = await authedFetch(
-        "http://localhost:3000/api/student/notifications/count?role=unread"
-      );
-      console.log(json);
-      setUnreadCount(json.data);
-    };
-    a();
+    getNotificationCount();
   }, []);
 
+  useEffect(() => {
+    if (!hasMore) {
+      return;
+    }
+    const pageSize = 10;
+    setLoading(true);
+    authedFetch(
+      `http://localhost:3000/api/student/notifications?page=${page}&pagesize=${pageSize}`
+    )
+      .then((json) => {
+        setNotifications((prev) => {
+          const existingIds = new Set(prev.map((n) => n.id));
+          const newItems = json.data.filter(
+            (n: Notification) => !existingIds.has(n.id)
+          );
+          return [...prev, ...newItems];
+        });
+        setHasMore(json.meta.page < json.meta.totalPages); // if less than pageSize, no more data
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [page]);
+
   return (
-    <div className="dropdown dropdown-end" onFocus={updateNotifications}>
+    <div className="dropdown dropdown-end" onBlur={getNotificationCount}>
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
         <NotificationInboxIcon unreadCount={unreadCount ?? 0} />
       </div>
@@ -130,12 +195,25 @@ const InboxDropdownContent = () => {
           notifications
         </p>
         {notifications.length > 0 ? (
-          notifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-            />
-          ))
+          notifications.map((notification, index) => {
+            if (index === notifications.length - 1) {
+              return (
+                <div key={notification.id} ref={lastNotificationRef}>
+                  <NotificationItem
+                    readNotification={readNotification}
+                    notification={notification}
+                  />
+                </div>
+              );
+            }
+            return (
+              <NotificationItem
+                key={notification.id}
+                readNotification={readNotification}
+                notification={notification}
+              />
+            );
+          })
         ) : (
           <li>
             <a>There's no earlier notifications</a>
