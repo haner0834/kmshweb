@@ -172,6 +172,8 @@ export async function login(
     }
     const expiresAt = new Date(verifiedToken.exp * 1000)
 
+    let isUntrustedDevice = true
+
     const newDevice = await prisma.$transaction(async (tx) => {
         // Find if a device record already exists for this client-side ID.
         const existingDevice = await tx.device.findUnique({
@@ -181,11 +183,15 @@ export async function login(
                     clientSideDeviceId: deviceInfo.clientSideDeviceId
                 }
             },
-            select: { refreshTokenId: true }
+            select: { refreshTokenId: true, isTrusted: true }
         })
 
         // If a device existed, delete its old, now-stale refresh token.
         if (existingDevice) {
+            if (existingDevice.isTrusted) {
+                isUntrustedDevice = false
+            }
+
             try {
                 // This makes the previous session's refresh token invalid.
                 await tx.refreshToken.delete({
@@ -244,7 +250,9 @@ export async function login(
         })
     })
 
-    await notifyOtherTrustedDevices(student.id, newDevice)
+    if (isUntrustedDevice) {
+        await notifyOtherTrustedDevices(student.id, newDevice)
+    }
 
     logger.info('Login successful', {
         service: "auth-service",
