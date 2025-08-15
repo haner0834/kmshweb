@@ -140,7 +140,7 @@ export const notifyOtherTrustedDevices = async (
     const result = parser.getResult();
 
     const deviceName = newDevice.type === "web"
-        ? `${result.os.name ?? "Unknown"} (Desktop)`
+        ? `${result.os.name ?? "Unknown"}`
         : result.device.model ?? "Unknown";
     const browserName = result.browser.name ?? "Unknown";
     const deviceInfo = `${deviceName}, ${browserName}`;
