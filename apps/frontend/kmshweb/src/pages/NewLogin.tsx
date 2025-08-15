@@ -93,10 +93,6 @@ export function MapboxMap({
   return <div ref={mapContainerRef} className={className} />;
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 const NewLogin = () => {
   const { id } = useParams();
   const [notification, setNotification] = useState<Notification>();
@@ -142,8 +138,6 @@ const NewLogin = () => {
         body: JSON.stringify(body),
       }
     );
-
-    await delay(200); // for better animation
 
     console.log("Error:", error);
 
