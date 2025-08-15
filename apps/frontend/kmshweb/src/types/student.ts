@@ -74,10 +74,13 @@ export type NotificationIcon = "score" | "auth" | "bus" | "disciplinary";
 export interface Notification {
   id: string;
   title: string;
+  body: string;
   type: NotificationType;
   icon: NotificationIcon;
   path: string;
+  route?: string
   isRead: boolean;
+  payload?: Record<string, any>;
 }
 
 export type DisciplinaryLevel =

@@ -55,6 +55,10 @@
     "message": "缺少頁數資訊，請重新整理",
     "devNote": "Page and page size are both required in query."
   },
+  "DEVICE_NOT_FOUND": {
+    "message": "查無對應設備",
+    "devNote": "Couldn't find related device."
+  },
   "UNAUTHORIZED": {
     "message": "尚未登入或登入已過期",
     "devNote": "User is not authenticated"
