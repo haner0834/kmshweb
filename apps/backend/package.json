@@ -1,9 +1,11 @@
 {
   "dependencies": {
     "@prisma/client": "^6.10.1",
+    "@types/ua-parser-js": "^0.7.39",
     "axios-cookiejar-support": "^6.0.3",
     "dotenv": "^17.2.1",
     "tough-cookie": "^5.1.2",
+    "ua-parser-js": "^2.0.4",
     "winston": "^3.17.0"
   },
   "devDependencies": {

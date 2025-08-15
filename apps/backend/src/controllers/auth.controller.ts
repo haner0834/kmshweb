@@ -51,6 +51,17 @@ export const registerHandler = async (req: Request, res: TypedResponse<{ id: str
     }
 }
 
+function getClientIp(req: any): string {
+    const cfIp = req.headers['cf-connecting-ip'];
+    if (typeof cfIp === 'string') return cfIp;
+
+    const xff = req.headers['x-forwarded-for'];
+    if (typeof xff === 'string') return xff.split(',')[0].trim();
+    if (Array.isArray(xff) && xff.length > 0) return xff[0].split(',')[0].trim();
+
+    return req.ip || "No ip";
+}
+
 /**
  * Handles user login.
  * @param req Express Request object, expects `id`, `password`, `deviceInfo`, and optionally `trustDevice` in the body.
@@ -75,7 +86,7 @@ export const loginHandler = async (req: Request, res: TypedResponse<Tokens>): Pr
     }
 
     try {
-        const ipAddress = req.ip || "No ip";
+        const ipAddress = getClientIp(req)
         const userAgent = req.headers["user-agent"] || "unknown"
 
         const tokens = await authService.login(id, password, trustDevice, deviceInfo, ipAddress, userAgent)
@@ -130,7 +141,7 @@ export const wrappedLoginHandler = async (req: Request, res: TypedResponse<Login
                 return
             }
 
-            const ipAddress = req.ip || "No ip";
+            const ipAddress = getClientIp(req);
             const userAgent = req.headers["user-agent"] || "unknown"
 
             const tokens = await authService.login(id, password, trustDevice, deviceInfo, ipAddress, userAgent)
@@ -169,6 +180,14 @@ export const wrappedLoginHandler = async (req: Request, res: TypedResponse<Login
             res.fail(error.code, error.message, error.statusCode)
             return
         }
+        logger.error({
+            service: "auth-service",
+            action: "login",
+            error: error as Error,
+            context: {
+                studentId: id,
+            }
+        })
         res.internalServerError("An unexpected error occurred while login(wrapped).")
         return
     }
