@@ -233,9 +233,9 @@ const NewLogin = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-base-100 pt-18 flex flex-col justify-center items-center">
-      <div className="min-w-xs max-w-lg w-full flex flex-col justify-center text-center items-center space-y-2">
-        <div className="h-50 w-full px-4 flex flex-col border-primary">
+    <div className="min-h-screen bg-base-100 pt-18 flex flex-col justify-center items-center mx-4">
+      <div className="min-w-xs max-w-xl w-full flex flex-col justify-center text-center items-center space-y-2">
+        <div className="h-50 w-full flex flex-col border-primary">
           {notification?.payload?.location.longitude != null &&
           notification?.payload?.location.latitude != null ? (
             <MapboxMap
@@ -260,7 +260,7 @@ const NewLogin = () => {
         {/* TODO: Replace "macOS (Desktop), Chrome" with "maxOS, Chrome" */}
         <p className="text-xs opacity-50">{notification?.body}</p>
 
-        <div className="w-full mt-10 space-y-2">
+        <div className="w-full mt-10 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0 items-center justify-center">
           <button
             onClick={toHome}
             className="btn btn-primary btn-wide btn-soft"
