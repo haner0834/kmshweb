@@ -350,6 +350,113 @@ const summaryItems = (exam: Exam) => [
   },
 ];
 
+const ExamContent = ({
+  exam,
+  displayData,
+}: {
+  exam: Exam | null | undefined;
+  displayData: DisplayData;
+}) => {
+  return (
+    <>
+      {exam && (
+        <div className="mb-4 w-full flex flex-col items-center justify-center">
+          <div className="w-full max-w-2xl">
+            <SectionTitle title="科目" />
+
+            <SubjectsDisplay
+              subjects={exam.subjects}
+              displayData={displayData}
+            />
+
+            <SectionTitle title="總結" />
+
+            <ul className="space-y-4">
+              <Section
+                content={summaryItems(exam).map((item) => (
+                  <li
+                    key={item.id}
+                    className="ms-4 flex my-3 me-2 items-center"
+                  >
+                    <p className="w-full flex">{item.name}</p>
+                    <p
+                      className={
+                        item.value ? "" : "opacity-50 whitespace-nowrap text-xs"
+                      }
+                    >
+                      {item.value ?? "尚無資料"}
+                    </p>
+                  </li>
+                ))}
+              />
+            </ul>
+
+            <SectionTitle title="排名" />
+
+            <ul className="space-y-4">
+              <Section
+                content={rankingItems(exam).map((item) => (
+                  <li
+                    key={item.id}
+                    className="ms-4 flex my-3 me-2 items-center"
+                  >
+                    <p className="w-full flex">{item.name}</p>
+                    <div
+                      className={
+                        item.value ? "" : "opacity-50 whitespace-nowrap text-xs"
+                      }
+                    >
+                      {item.value ?? "尚無資料"}
+                    </div>
+                  </li>
+                ))}
+              />
+            </ul>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+const Loading = () => {
+  return (
+    <div className="mb-30 w-full flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl">
+        <SectionTitle title="科目" />
+
+        <ul className="space-y-4">
+          <Section
+            content={[...Array(2).keys()].map(() => (
+              <div className="skeleton h-5 rounded-md w-full" />
+            ))}
+          />
+        </ul>
+
+        <SectionTitle title="總結" />
+
+        <ul className="space-y-4">
+          <Section
+            content={[...Array(2).keys()].map(() => (
+              <div className="skeleton h-5 rounded-md w-full" />
+            ))}
+          />
+        </ul>
+
+        <SectionTitle title="排名" />
+
+        <ul className="space-y-4">
+          <Section
+            content={[...Array(2).keys()].map(() => (
+              <div className="skeleton h-5 rounded-md w-full" />
+            ))}
+          />
+        </ul>
+      </div>
+    </div>
+  );
+};
+
 const rankingItems = (exam: Exam) => [
   {
     id: "ranking_class",
@@ -374,6 +481,7 @@ const ExamScore = () => {
   const [isFirstFetch, setIsFirstFetch] = useState(false);
   const [exam, setExam] = useState<Exam | null>();
   const [semester, setSemester] = useState<Semester | null>();
+  const [isLoading, setIsLoading] = useState(false);
 
   let examId = searchParams.get("examid");
 
@@ -431,8 +539,8 @@ const ExamScore = () => {
 
   useEffect(() => {
     const a = async () => {
-      console.log("exam score 1");
       try {
+        setIsLoading(true);
         let response = await authedFetch(
           "http://localhost:3000/api/student/semesters/current?includeExams?true"
         );
@@ -459,9 +567,14 @@ const ExamScore = () => {
         const newParams = new URLSearchParams(searchParams);
         newParams.set("examid", response.data.exams[0]?.id ?? "");
         setSearchParams(newParams, { replace: true });
+        setIsFirstFetch(false);
 
         examId = response.data.exams[0]?.id ?? "";
+
+        setIsLoading(false);
       } catch (error) {
+        setIsFirstFetch(false);
+        setIsLoading(false);
         console.error(error);
       }
     };
@@ -535,61 +648,18 @@ const ExamScore = () => {
     <div className="w-screen flex join-vertical min-h-screen justify-start pt-18 bg-base-300">
       <ExamTabs exams={semester?.exams ?? []} />
 
-      {exam && (
-        <div className="mb-30 w-full flex flex-col items-center justify-center">
-          <div className="w-full max-w-2xl">
-            <SectionTitle title="科目" />
+      {isFirstFetch ? (
+        <div className="w-screen h-screen flex flex-col items-center justify-center">
+          <span className="loading loading-dots loading-xl" />
 
-            <SubjectsDisplay
-              subjects={exam.subjects}
-              displayData={displayData}
-            />
-
-            <SectionTitle title="總結" />
-
-            <ul className="space-y-4">
-              <Section
-                content={summaryItems(exam).map((item) => (
-                  <li
-                    key={item.id}
-                    className="ms-4 flex my-3 me-2 items-center"
-                  >
-                    <p className="w-full flex">{item.name}</p>
-                    <p
-                      className={
-                        item.value ? "" : "opacity-50 whitespace-nowrap text-xs"
-                      }
-                    >
-                      {item.value ?? "尚無資料"}
-                    </p>
-                  </li>
-                ))}
-              />
-            </ul>
-
-            <SectionTitle title="排名" />
-
-            <ul className="space-y-4">
-              <Section
-                content={rankingItems(exam).map((item) => (
-                  <li
-                    key={item.id}
-                    className="ms-4 flex my-3 me-2 items-center"
-                  >
-                    <p className="w-full flex">{item.name}</p>
-                    <div
-                      className={
-                        item.value ? "" : "opacity-50 whitespace-nowrap text-xs"
-                      }
-                    >
-                      {item.value ?? "尚無資料"}
-                    </div>
-                  </li>
-                ))}
-              />
-            </ul>
-          </div>
+          <p className="text-sm font-medium opacity-50">
+            首次載入資料需要一些時間
+          </p>
         </div>
+      ) : isLoading ? (
+        <Loading />
+      ) : (
+        <ExamContent exam={exam} displayData={displayData} />
       )}
 
       <ResponsiveSheet
