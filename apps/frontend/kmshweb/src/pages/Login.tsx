@@ -37,6 +37,9 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
+    if (waiting) {
+      return;
+    }
     setWasSubmitted(true);
     if (!isSIDValid() || !studentId || !password || !agreed) {
       return;
