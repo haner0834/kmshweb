@@ -121,15 +121,14 @@ const LoginCheck = () => {
 
     if (isStudentCleared()) {
       showModal({
-        title: "幹嘛勒那麼想駭我網站",
-        description: "肯定是喜歡我 真害羞",
+        title: "請不要隨便刷新 謝謝",
+        description: "資料已丟失，請重新登入",
         buttons: [
           {
-            label: "加入開源專案",
+            label: "返回登入",
             role: "primary",
             style: "btn-primary",
-            onClick: () =>
-              (window.location.href = "https://github.com/haner0834/kmshweb"),
+            onClick: () => navigate("/login"),
           },
         ],
       });
