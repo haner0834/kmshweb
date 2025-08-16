@@ -541,6 +541,7 @@ const ExamScore = () => {
     const a = async () => {
       try {
         setIsLoading(true);
+        setNavbarButtons([]);
         let response = await authedFetch(
           "http://localhost:3000/api/student/semesters/current?includeExams?true"
         );
