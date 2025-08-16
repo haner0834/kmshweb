@@ -203,8 +203,8 @@ const Login = () => {
                     onChange={(e) => setAgreed(e.target.checked)}
                   />
                   本人已詳細閱讀並同意本產品之
-                  <a className="link" href="https://youtube.com">
-                    用戶協議
+                  <a className="link" href="/privacy-policy.html">
+                    隱私政策
                   </a>
                 </label>
                 {!agreed && wasSubmitted && (
