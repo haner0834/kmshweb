@@ -1,0 +1,69 @@
+{
+  "聯絡與回饋": [
+    {
+      "title": "Instagram",
+      "icon": "Instagram",
+      "link": "https://www.instagram.com/coffee_.roll?igsh=MWt0eGVub3B4aTV0Zw%3D%3D"
+    },
+    {
+      "title": "Email",
+      "icon": "Mail",
+      "link": "mailto:coffeeroll901@gmail.com"
+    },
+    {
+      "title": "問題回報",
+      "icon": "MessageCircleWarning",
+      "link": "report/list"
+    },
+    {
+      "title": "功能期許",
+      "icon": "Star",
+      "link": "report/list"
+    }
+  ],
+  "使用": [
+    {
+      "title": "常見問題",
+      "icon": "CircleQuestionMark",
+      "link": "faq"
+    },
+    {
+      "title": "使用說明",
+      "icon": "LifeBuoy",
+      "link": "guide"
+    }
+  ],
+  "隱私": [
+    {
+      "title": "隱私政策",
+      "icon": "ShieldCheck",
+      "link": "/privacy-policy.html"
+    }
+  ],
+  "其他產品": [
+    {
+      "title": "Gremo",
+      "icon": "Gremo",
+      "link": "https://apps.apple.com/tw/app/gremo/id6450648780"
+    }
+  ],
+  "open source": [
+    {
+      "title": "程式碼開源",
+      "icon": "GitHub",
+      "link": "https://github.com/haner0834/kmshweb"
+    },
+    {
+      "title": "開源授權（Licence）",
+      "icon": "Scale",
+      "link": "https://github.com/haner0834/kmshweb/blob/main/LICENSE"
+    }
+  ],
+  "當個好人": [
+    {
+      "title": "贊助",
+      "icon": "HeartHandshake",
+      "link": "sponsor"
+    }
+  ]
+}

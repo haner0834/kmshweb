@@ -4,19 +4,35 @@ import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
 import { Row } from "./Profile";
 import {
-  MessageCircleWarning as MsgCircleWarning,
+  MessageCircleWarning,
   ChevronRight,
   Mail,
-  CircleQuestionMark as Question,
+  CircleQuestionMark,
   Instagram,
   ShieldCheck,
   LifeBuoy,
-  HeartHandshake as Handshake,
-  Github as GitHub,
+  HeartHandshake,
+  Github,
   Scale,
-  Gremo,
   Star,
+  Gremo,
 } from "@icons";
+
+import moreData from "@shared/jsons/more.json";
+
+const icons: Record<string, React.ReactNode> = {
+  Instagram: <Instagram />,
+  Mail: <Mail />,
+  MessageCircleWarning: <MessageCircleWarning />,
+  Star: <Star />,
+  CircleQuestionMark: <CircleQuestionMark />,
+  LifeBuoy: <LifeBuoy />,
+  ShieldCheck: <ShieldCheck />,
+  Gremo: <img src={Gremo} className="w-6 rounded-full" />,
+  GitHub: <Github />,
+  Scale: <Scale />,
+  HeartHandshake: <HeartHandshake />,
+};
 
 const Link = ({
   icon,
@@ -48,100 +64,28 @@ const More = () => {
     setNavbarTitle("更多");
   }, []);
 
-  // TODO: `guide`, `faq`, `report`, `feat-req`
   return (
     <div className="min-h-screen bg-base-300 pt-16">
       <ul className="pt-4 mx-auto w-full max-w-xl">
-        <SectionTitle title="聯絡與回饋" />
-        <Section
-          content={
-            <>
-              <Link
-                icon={<Instagram />}
-                title="Instagram"
-                link="https://www.instagram.com/coffee_.roll?igsh=MWt0eGVub3B4aTV0Zw%3D%3D"
-              />
-
-              <Link
-                icon={<Mail />}
-                title="Email"
-                link="mailto:coffeeroll901@gmail.com"
-              />
-
-              <Link
-                icon={<MsgCircleWarning />}
-                title="問題回報"
-                link="report/list"
-              />
-
-              <Link icon={<Star />} title="功能期許" link="report/list" />
-            </>
-          }
-        />
-
-        <SectionTitle title="使用" />
-        <Section
-          content={
-            <>
-              <Link icon={<Question />} title="常見問題" link="faq" />
-              <Link icon={<LifeBuoy />} title="使用說明" link="guide" />
-            </>
-          }
-        />
-
-        <SectionTitle title="隱私" />
-        <Section
-          content={
-            <>
-              <Link
-                icon={<ShieldCheck />}
-                title="隱私政策"
-                link="/privacy-policy.html"
-              />
-            </>
-          }
-        />
-
-        <SectionTitle title="其他產品" />
-        <Section
-          content={
-            <>
-              <Link
-                icon={<img src={Gremo} className="w-6 rounded-full" />}
-                title="Gremo"
-                link="https://apps.apple.com/tw/app/gremo/id6450648780"
-              />
-            </>
-          }
-        />
-
-        <SectionTitle title="open source" />
-        <Section
-          content={
-            <>
-              <Link
-                icon={<GitHub />}
-                title="程式碼開源"
-                link="https://github.com/haner0834/kmshweb"
-              />
-
-              <Link
-                icon={<Scale />}
-                title="開源授權（Licence）"
-                link="https://github.com/haner0834/kmshweb/blob/main/LICENSE"
-              />
-            </>
-          }
-        />
-
-        <SectionTitle title="當個好人" />
-        <Section
-          content={
-            <>
-              <Link icon={<Handshake />} title="贊助" link="sponsor" />
-            </>
-          }
-        />
+        {Object.entries(moreData).map(([sectionTitle, links]) => (
+          <div key={sectionTitle}>
+            <SectionTitle title={sectionTitle} />
+            <Section
+              content={
+                <>
+                  {(links as any[]).map((item, i) => (
+                    <Link
+                      key={i}
+                      icon={icons[item.icon]}
+                      title={item.title}
+                      link={item.link}
+                    />
+                  ))}
+                </>
+              }
+            />
+          </div>
+        ))}
 
         <p className="mt-20 flex justify-center text-center text-xs opacity-40">
           © 2025 林禹澔. All rights reserved.

@@ -110,6 +110,7 @@ const Upcoming = () => {
           },
         ],
       });
+      return;
     }
 
     const body = {
@@ -132,12 +133,13 @@ const Upcoming = () => {
     setTapTimes((prev) => prev + 1);
   };
 
-  const getRate = async (): Promise<number> => {
+  const getRate = async (): Promise<number | undefined> => {
     const res = await authedFetch(
       `http://localhost:3000/api/student/rate?feature=${map[name!].code}`
     );
     if (!res.success) {
       console.error(res);
+      return undefined;
     }
     return res.data;
   };
@@ -145,6 +147,9 @@ const Upcoming = () => {
   useEffect(() => {
     const updateRate = async () => {
       const rate = await getRate();
+      if (!rate) {
+        return;
+      }
       setIsDefault(false);
       setRate(rate);
     };

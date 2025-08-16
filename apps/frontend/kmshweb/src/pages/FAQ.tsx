@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import FaqJson from "@shared/faq.json";
+import FaqJson from "@shared/jsons/faq.json";
 
 const FAQ = () => {
   const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
