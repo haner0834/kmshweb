@@ -1,97 +1,18 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useModal } from "../widgets/ModalContext";
 import { useAuthFetch } from "../auth/useAuthFetch";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
-import mapboxgl, { Map } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import * as turf from "@turf/turf";
 import { type Notification } from "../types/student";
 import { TriangleAlert } from "@icons";
 import { getErrorMessage } from "../utils/errors";
 
 const MAPBOX_KEY = import.meta.env.VITE_MAPBOX_KEY;
 
-mapboxgl.accessToken = MAPBOX_KEY;
-
-interface MapboxMapProps {
-  lng: number;
-  lat: number;
-  zoom?: number;
-  radiusMeters?: number;
-  className?: string; // 容器樣式由父層決定
-}
-
-export function MapboxMap({
-  lng,
-  lat,
-  zoom = 11,
-  radiusMeters = 2500,
-  className,
-}: MapboxMapProps) {
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<Map | null>(null);
-
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
-
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: [lng, lat],
-      zoom,
-    });
-
-    const markerEl = document.createElement("div");
-    markerEl.style.backgroundColor = "#3B28CC";
-    markerEl.style.width = "16px";
-    markerEl.style.height = "16px";
-    markerEl.style.borderRadius = "50%";
-    markerEl.style.boxShadow = "0 0 4px rgba(0,0,0,0.3)";
-    markerEl.style.border = "2px solid white";
-
-    new mapboxgl.Marker({ element: markerEl }).setLngLat([lng, lat]).addTo(map);
-
-    const options = { steps: 64, units: "meters" as const };
-    const circle = turf.circle([lng, lat], radiusMeters, options);
-
-    map.on("load", () => {
-      map.addSource("circle-radius", {
-        type: "geojson",
-        data: circle,
-      });
-
-      map.addLayer({
-        id: "circle-radius-fill",
-        type: "fill",
-        source: "circle-radius",
-        paint: {
-          "fill-color": "#3F8EFC",
-          "fill-opacity": 0.2,
-        },
-      });
-
-      map.addLayer({
-        id: "circle-radius-outline",
-        type: "line",
-        source: "circle-radius",
-        paint: {
-          "line-color": "#3F8EFC",
-          "line-width": 2,
-        },
-      });
-    });
-
-    mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, [lng, lat, zoom]);
-
-  return <div ref={mapContainerRef} className={className} />;
-}
+const MapboxMap = React.lazy(() =>
+  import("../widgets/MapboxMap").then((m) => ({ default: m.MapboxMapLazy }))
+);
 
 const NewLogin = () => {
   const { id } = useParams();
@@ -235,15 +156,20 @@ const NewLogin = () => {
   return (
     <div className="min-h-screen bg-base-100 pt-18 flex flex-col justify-center items-center mx-4">
       <div className="min-w-xs max-w-xl w-full flex flex-col justify-center text-center items-center space-y-2">
-        <div className="h-50 w-full flex flex-col border-primary">
+        <div className="h-50 w-full flex flex-col">
           {notification?.payload?.location.longitude != null &&
           notification?.payload?.location.latitude != null ? (
-            <MapboxMap
-              lng={notification.payload.location.longitude}
-              lat={notification.payload.location.latitude}
-              zoom={11}
-              className="flex-1 w-full h-full rounded-field shadow-md"
-            />
+            <Suspense
+              fallback={
+                <div className="font-medium opacity-50">Loading map...</div>
+              }
+            >
+              <MapboxMap
+                lng={notification.payload.location.longitude}
+                lat={notification.payload.location.latitude}
+                className="flex-1 w-full h-full rounded-field shadow-md"
+              />
+            </Suspense>
           ) : (
             <div className="flex flex-col font-bold text-sm bg-base-300 rounded-field w-full h-full items-center justify-center">
               <TriangleAlert className="w-8 h-8 text-error" />

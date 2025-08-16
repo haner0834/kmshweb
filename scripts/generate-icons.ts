@@ -9,34 +9,36 @@ const ICONS_DIR = path.resolve(__dirname, "../shared/icons");
 const OUTPUT_DIR = path.resolve(__dirname, "../apps/frontend/kmshweb/src/generated");
 const OUTPUT_FILE = path.join(OUTPUT_DIR, "icons.tsx");
 
-// Convert file name to PascalCase (circle-check -> CircleCheck)
 function toPascalCase(filename: string) {
     return filename
-        .replace(/\.[^/.]+$/, "") // remove extension
+        .replace(/\.[^/.]+$/, "")
         .split(/[-_]/g)
-        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
         .join("");
 }
 
 async function generateIconsIndex() {
     try {
         const files = await fs.readdir(ICONS_DIR);
-        const iconFiles = files.filter(f => f.endsWith(".svg") || f.endsWith(".png")); // support svg/png
+        const iconFiles = files.filter((f) => f.endsWith(".svg") || f.endsWith(".png"));
 
         await fs.ensureDir(OUTPUT_DIR);
 
         const imports = iconFiles
-            .map(f => {
+            .map((f) => {
                 const name = toPascalCase(f);
                 const ext = path.extname(f).toLowerCase();
-                const suffix = ext === ".svg" ? "?react" : "";
-                return `import ${name} from '@shared/icons/${f}${suffix}';`;
+                if (ext === ".svg") {
+                    // SVG: lazy component
+                    return `export const ${name} = React.lazy(() => import('@shared/icons/${f}?react'));`;
+                } else {
+                    // PNG: just export string URL
+                    return `export { default as ${name} } from '@shared/icons/${f}';`;
+                }
             })
             .join("\n");
 
-        const exports = `export {\n  ${iconFiles.map(f => toPascalCase(f)).join(",\n  ")}\n};\n`;
-
-        const content = `${imports}\n\n${exports}`;
+        const content = `import React from "react";\n\n${imports}\n`;
 
         await fs.writeFile(OUTPUT_FILE, content, "utf8");
         console.log("✅ Icons index generated at", OUTPUT_FILE);
@@ -45,11 +47,9 @@ async function generateIconsIndex() {
     }
 }
 
-// Initial run
 generateIconsIndex();
 
-// Watch for changes
-chokidar.watch(ICONS_DIR, { ignoreInitial: true }).on("all", (_event, _path) => {
+chokidar.watch(ICONS_DIR, { ignoreInitial: true }).on("all", () => {
     console.log("Detected change in icons folder. Regenerating...");
     generateIconsIndex();
 });
