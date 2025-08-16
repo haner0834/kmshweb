@@ -1,4 +1,4 @@
-import errorMap from "@shared/errors/errorMessage.json";
+import errorMap from "@shared/jsons/errors/errorMessage.json";
 
 type ErrorCode = keyof typeof errorMap;
 
