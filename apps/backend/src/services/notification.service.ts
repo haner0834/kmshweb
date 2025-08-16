@@ -140,7 +140,7 @@ export const notifyOtherTrustedDevices = async (
     const result = parser.getResult();
 
     const deviceName = newDevice.type === "web"
-        ? `${result.os.name ?? "Unknown"} (Desktop)`
+        ? `${result.os.name ?? "Unknown"}`
         : result.device.model ?? "Unknown";
     const browserName = result.browser.name ?? "Unknown";
     const deviceInfo = `${deviceName}, ${browserName}`;
@@ -161,7 +161,7 @@ export const notifyOtherTrustedDevices = async (
 
     const loginTime = new Date().toLocaleString("zh-TW");
     const title = "新設備登入提醒";
-    const body = `您的帳號於 ${loginTime} 在 ${location?.text ?? "Unknown"} 使用新的裝置（ ${deviceInfo} ）登入。如非本人操作，請立即檢查帳號安全。`;
+    const body = `您的帳號於 ${loginTime} 在 ${location?.text ?? "Unknown"} 使用新的裝置（${deviceInfo}）登入。如非本人操作，請立即檢查帳號安全。`;
 
     const parsedUa = {
         browser: {

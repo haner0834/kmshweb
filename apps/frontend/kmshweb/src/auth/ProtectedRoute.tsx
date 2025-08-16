@@ -47,7 +47,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     };
 
     a();
-  }, []);
+  }, [accessToken]);
 
   return accessToken ? (
     children

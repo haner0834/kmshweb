@@ -121,6 +121,28 @@ export const useAuthFetch = () => {
         } catch (error) {
           lastError = error as Error;
 
+          // This shit is based on the api shape:
+          // ```
+          // {
+          //   "success": false,
+          //   "data": null,
+          //   "error": {
+          //     "code": "ERROR_CODE",
+          //     "message": "Error Message"
+          //   }
+          // }
+          //```
+          //
+          // And the `error.data` is what the shape above (`res.json`),
+          // so checking `error.data.error.code` and `error.data.error.message`
+          if (
+            error instanceof HttpError &&
+            !!error.data.error.code &&
+            !!error.data.error.code
+          ) {
+            return error.data;
+          }
+
           // If we actively throw an HttpError or a critical login expiration error,
           // we throw it again and interrupt the retry process.
           if (
