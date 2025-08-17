@@ -539,24 +539,28 @@ const ExamScore = () => {
   };
 
   const getSemester = async (oldSite: boolean = false) => {
-    let response = await authedFetch(
-      `http://localhost:3000/api/student/semesters/current${
-        oldSite ? "?source=origin" : ""
-      }`
-    );
+    try {
+      let response = await authedFetch(
+        `http://localhost:3000/api/student/semesters/current${
+          oldSite ? "?source=origin" : ""
+        }`
+      );
 
-    let semester: Semester = response.data;
-    const [title, subtitle] = (response.data.name as string).split(" ");
-    semester.title = title;
-    semester.subtitle = subtitle;
+      let semester: Semester = response.data;
+      const [title, subtitle] = (response.data.name as string).split(" ");
+      semester.title = title;
+      semester.subtitle = subtitle;
 
-    setSemester(semester);
+      setSemester(semester);
 
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("examid", response.data.exams[0]?.id ?? "");
-    setSearchParams(newParams, { replace: true });
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set("examid", response.data.exams[0]?.id ?? "");
+      setSearchParams(newParams, { replace: true });
 
-    examId = response.data.exams[0]?.id ?? "";
+      examId = response.data.exams[0]?.id ?? "";
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
