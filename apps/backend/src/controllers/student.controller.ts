@@ -1,4 +1,4 @@
-import { Response } from "express";
+import e, { Response } from "express";
 import * as studentService from "../services/student.service"
 import { AuthRequest } from "../types/auth.types";
 import { getNotificationCount, getNotificationsWithPagination } from "../services/notification.service";
@@ -7,7 +7,7 @@ import { Exam, Semester } from "@prisma/client";
 import { AuthHandler } from "../types/api.types";
 import { SemesterWithDetails } from "../types/crawler.senior.types";
 import { DisciplinaryEventDTO } from "../services/parser.senior/disciplinarypage.service";
-import { AppError, AuthError } from "../types/error.types";
+import { AppError, AuthError, NotFoundError } from "../types/error.types";
 import { logger } from "../utils/logger.utils";
 
 /**
@@ -365,9 +365,21 @@ export const getDisciplinaryHandler: AuthHandler<DisciplinaryEventDTO[]> = async
         return
     }
 
+    const source = req.query.source
+
     try {
-        const displinaryEvents = await studentService.updateDisplinary(studentId)
-        res.success(displinaryEvents)
+        let events: DisciplinaryEventDTO[]
+        if (source === "origin") {
+            events = await studentService.updateDisplinary(studentId)
+        } else {
+            const displinaryEvents = await studentService.getDisciplinaryFromDb(studentId)
+            if (!displinaryEvents) {
+                throw new NotFoundError("DISCIPLINARY_EVENTS")
+            }
+            events = displinaryEvents
+        }
+
+        res.success(events)
     } catch (error) {
         if (error instanceof AppError) {
             logger.error({

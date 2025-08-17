@@ -30,6 +30,7 @@ export const GraduationCap = React.lazy(() => import('@shared/icons/graduation-c
 export { default as Gremo } from '@shared/icons/gremo.png';
 export const Hash = React.lazy(() => import('@shared/icons/hash.svg?react'));
 export const HeartHandshake = React.lazy(() => import('@shared/icons/heart-handshake.svg?react'));
+export const Home = React.lazy(() => import('@shared/icons/home.svg?react'));
 export const IdCard = React.lazy(() => import('@shared/icons/id-card.svg?react'));
 export const Info = React.lazy(() => import('@shared/icons/info.svg?react'));
 export const Instagram = React.lazy(() => import('@shared/icons/instagram.svg?react'));

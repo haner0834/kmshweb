@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 import LoginButton from "./LoginButton";
 import BackButton from "./BackButton";
 import ProfileButton from "./ProfileButton";
+import HomeButton from "./HomeButton";
 
 type NavbarButtonsContextType = {
   navbarButtons: NavbarButton[];
@@ -88,6 +89,15 @@ export const NavbarButtonTypeMap = new Map<NavbarButtonType, NavbarButton>([
       id: "navbar_profile",
       order: 0,
       content: <ProfileButton />,
+    },
+  ],
+  [
+    "home",
+    {
+      placement: "end",
+      id: "navbar_home",
+      order: 0,
+      content: <HomeButton />,
     },
   ],
 ]);

@@ -10,7 +10,8 @@ export type NavbarButtonType =
   | "navbarTitle"
   | "sidebarToggle"
   | "back"
-  | "profile";
+  | "profile"
+  | "home";
 
 type NavbarButtonPlacement = "start" | "center" | "end";
 

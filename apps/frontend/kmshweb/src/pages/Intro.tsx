@@ -5,7 +5,7 @@ import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 const Intro = () => {
   const { setNavbarButtonsByType } = useNavbarButtons();
   useEffect(() => {
-    const buttons: NavbarButtonType[] = ["logo", "themeToggle"];
+    const buttons: NavbarButtonType[] = ["logo", "themeToggle", "home"];
     if (!localStorage.getItem("isLoggedIn")) buttons.push("login");
 
     setNavbarButtonsByType(buttons);

@@ -109,8 +109,8 @@ export function parseStudentDisciplinaryPage(html: string): ParsedPageDTO {
     }
 
     const studentInfo: StudentInfoDTO = {
-        name: studentNameMatch[1].trim(),
-        id: studentIdMatch[1].trim(),
+        name: studentNameMatch.trim(),
+        id: studentIdMatch.trim(),
     };
 
     const disciplinaryEvents: DisciplinaryEventDTO[] = [];
@@ -122,7 +122,7 @@ export function parseStudentDisciplinaryPage(html: string): ParsedPageDTO {
         { type: DisciplinaryLevel.commendation, index: 6 }, // 嘉獎
     ];
 
-    const rewardTable = $('font:contains("學期獎勵明細：")').closest('tr').next('table');
+    const rewardTable = $('font:contains("學期獎勵明細：")').closest('tbody')
     rewardTable.find('tr').slice(1).each((_, row) => {
         const cells = $(row).find('td');
         if (cells.length < 7 || cells.attr('colspan')) return; // 忽略表頭和"無紀錄"行
@@ -153,7 +153,7 @@ export function parseStudentDisciplinaryPage(html: string): ParsedPageDTO {
         { type: DisciplinaryLevel.warning, index: 6 },      // 警告
     ];
 
-    const punishmentTable = $('font:contains("學期懲罰明細：")').closest('tr').next('table');
+    const punishmentTable = $('font:contains("學期懲罰明細：")').closest('tbody');
     punishmentTable.find('tr').slice(1).each((_, row) => {
         const cells = $(row).find('td');
         if (cells.length < 7 || cells.attr('colspan')) return; // 忽略表頭和"無紀錄"行
