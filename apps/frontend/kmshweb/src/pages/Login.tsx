@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import type { LoginRequestBody } from "../types/auth";
 import { getClientDeviceId } from "../utils/device";
-import NavbarLogo from "../widgets/NavbarLogo";
 import { Eye, EyeSlash } from "@icons";
 import { getErrorMessage } from "../utils/errors";
 import { useAuth } from "../auth/AuthContext";
