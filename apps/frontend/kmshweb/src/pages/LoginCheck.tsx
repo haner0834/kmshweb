@@ -13,7 +13,7 @@ import { Person, IdCard as IDCard, GraduationCap } from "@icons";
 
 const LoginCheck = () => {
   const { student, id, password, trustDevice, clearData } = useStudent();
-  const { setNavbarButtons } = useNavbarButtons();
+  const { setNavbarTitle } = useNavbarButtons();
   const navigate = useNavigate();
   const { showModal } = useModal();
   const { setAccessToken } = useAuth();
@@ -111,13 +111,7 @@ const LoginCheck = () => {
   };
 
   useEffect(() => {
-    setNavbarButtons([
-      {
-        content: <p className="font-bold">:D</p>,
-        placement: "center",
-        id: "navbar_title_:D",
-      },
-    ]);
+    setNavbarTitle(":D");
 
     if (isStudentCleared()) {
       showModal({

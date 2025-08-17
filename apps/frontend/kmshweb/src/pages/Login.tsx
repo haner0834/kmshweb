@@ -16,7 +16,7 @@ const Login = () => {
   const { showModal } = useModal();
   const [password, setPassword] = useState("");
   const [wasSubmitted, setWasSubmitted] = useState(false);
-  const { setNavbarButtonsByType } = useNavbarButtons();
+  const { setNavbarButtonsByType, setNavbarTitle } = useNavbarButtons();
   const [waiting, setWaiting] = useState(false);
   const [trustDevice, setTrustDevice] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -128,17 +128,14 @@ const Login = () => {
   };
 
   useEffect(() => {
-    setNavbarButtonsByType(["back", "themeToggle"]);
+    setNavbarButtonsByType(["logo", "themeToggle"]);
+    setNavbarTitle(undefined);
   }, []);
 
   return (
     <>
       <div className="h-screen w-screen bg-base-100 flex justify-center items-center">
         <div>
-          <button disabled>
-            <NavbarLogo />
-          </button>
-
           <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
             {/* Login input field */}
             <legend className="fieldset-legend">登入</legend>
