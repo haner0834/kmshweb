@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
-import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
+import {
+  NavbarButtonTypeMap,
+  useNavbarButtons,
+} from "../widgets/NavbarButtonsContext";
 import type { DisciplinaryEvent, DisciplinaryLevel } from "../types/student";
 import {
   ThumbsUp,
@@ -11,57 +14,10 @@ import {
   TriangleAlert,
   CircleAlert,
 } from "@icons";
-
-const disciplinaryEvents: DisciplinaryEvent[] = [
-  //   {
-  //     studentId: "abc",
-  //     incidentDate: new Date().toISOString(),
-  //     approvalDate: new Date().toISOString(),
-  //     reason: "?",
-  //     type: "minorMerit",
-  //     count: 2,
-  //   },
-  //   {
-  //     studentId: "abc",
-  //     incidentDate: new Date().toISOString(),
-  //     approvalDate: new Date().toISOString(),
-  //     reason: "???",
-  //     type: "majorMerit",
-  //     count: 2,
-  //   },
-  //   {
-  //     studentId: "abc",
-  //     incidentDate: new Date().toISOString(),
-  //     approvalDate: new Date().toISOString(),
-  //     reason: "IDK what it is",
-  //     type: "commendation",
-  //     count: 2,
-  //   },
-  //   {
-  //     studentId: "abc",
-  //     incidentDate: new Date().toISOString(),
-  //     approvalDate: new Date().toISOString(),
-  //     reason: "Fuck ur gf",
-  //     type: "majorDemerit",
-  //     count: 1,
-  //   },
-  //   {
-  //     studentId: "abc",
-  //     incidentDate: new Date().toISOString(),
-  //     approvalDate: new Date().toISOString(),
-  //     reason: "Smoke",
-  //     type: "warning",
-  //     count: 1,
-  //   },
-  //   {
-  //     studentId: "abc",
-  //     incidentDate: new Date().toISOString(),
-  //     approvalDate: new Date().toISOString(),
-  //     reason: "Playing ur gf",
-  //     type: "minorDemerit",
-  //     count: 2,
-  //   },
-];
+import { useAuthFetch } from "../auth/useAuthFetch";
+import { useNavigate } from "react-router-dom";
+import type { NavbarButton, NavbarButtonType } from "../widgets/Navbar";
+import PieProgress from "../widgets/PieProgress";
 
 const getIcon = (level: DisciplinaryLevel) => {
   if (level === "commendation") {
@@ -71,7 +27,7 @@ const getIcon = (level: DisciplinaryLevel) => {
   } else if (level === "majorMerit") {
     return <Medal className="w-8 pt-0.5" />;
   } else if (level === "warning") {
-    return <ThumbsDown className="w-8 pt-1" />;
+    return <ThumbsDown className="w-8 mt-1" />;
   } else if (level === "minorDemerit") {
     return <CircleAlert className="w-8" />;
   } else if (level === "majorDemerit") {
@@ -97,14 +53,33 @@ const getTitle = (level: DisciplinaryLevel) => {
   }
 };
 
+const getBadgeStyle = (level: DisciplinaryLevel) => {
+  if (level === "commendation") {
+    return "badge-info";
+  } else if (level === "minorMerit") {
+    return "badge-primary";
+  } else if (level === "majorMerit") {
+    return "badge-success";
+  } else if (level === "warning") {
+    return "badge-neutral";
+  } else if (level === "minorDemerit") {
+    return "badge-warning";
+  } else if (level === "majorDemerit") {
+    return "badge-error";
+  }
+};
+
 const formatDate = (isoString: string) => {
   const date = new Date(isoString);
   return `${date.getFullYear() - 2000}/${date.getMonth()}/${date.getDate()}`;
 };
 
 const Disciplinary = () => {
-  const { setNavbarButtonsByType } = useNavbarButtons();
+  const { setNavbarButtons, setNavbarTitle } = useNavbarButtons();
   const [events, setEvents] = useState<Record<string, DisciplinaryEvent[]>>({});
+  const { authedFetch } = useAuthFetch();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const splitEvents = (
     events: DisciplinaryEvent[]
@@ -127,10 +102,56 @@ const Disciplinary = () => {
     return result;
   };
 
-  useEffect(() => {
-    setNavbarButtonsByType(["back"]);
+  const getEvents = async (origin: boolean = false) => {
+    const res = await authedFetch(
+      `http://localhost:3000/api/student/disciplinary${
+        origin ? "?source=origin" : ""
+      }`
+    );
+    if (!res.success) {
+      console.error(res.error);
+      return;
+    }
 
-    setEvents(splitEvents(disciplinaryEvents));
+    const { data } = res;
+
+    setEvents(splitEvents(data));
+  };
+
+  useEffect(() => {
+    const baseButtons: NavbarButton[] = (
+      ["back", "themeToggle"] as NavbarButtonType[]
+    )
+      .map((type) => NavbarButtonTypeMap.get(type))
+      .filter(Boolean) as NavbarButton[];
+
+    if (isLoading) {
+      baseButtons.push({
+        placement: "end",
+        content: (
+          <PieProgress
+            duration={1300}
+            strokeWidth={3.6}
+            color="var(--color-primary)"
+          />
+        ),
+        order: 1000,
+        id: "navbar_loading",
+      });
+    }
+    setNavbarButtons(baseButtons);
+    setNavbarTitle("獎懲");
+  }, [isLoading]);
+
+  useEffect(() => {
+    const a = async () => {
+      await getEvents();
+      setIsLoading(true);
+      await getEvents(true);
+      setIsLoading(false);
+    };
+
+    a();
   }, []);
 
   return (
@@ -145,7 +166,7 @@ const Disciplinary = () => {
                 <Section
                   content={value.map((event) => (
                     <li
-                      className="my-3 ms-2 items-center flex space-x-2"
+                      className="items-center flex space-x-2"
                       key={
                         event.approvalDate + event.incidentDate + event.reason
                       }
@@ -160,9 +181,13 @@ const Disciplinary = () => {
                         </p>
                       </div>
 
-                      <p className="whitespace-nowrap">
+                      <span
+                        className={`whitespace-nowrap badge badge-soft ${getBadgeStyle(
+                          event.type
+                        )}`}
+                      >
                         {getTitle(event.type)} × {event.count}
-                      </p>
+                      </span>
                     </li>
                   ))}
                 />
@@ -171,31 +196,36 @@ const Disciplinary = () => {
           ))}
         </ul>
       ) : (
-        <div className="flex join-vertical space-y-4 items-center justify-center min-h-[60vh] text-center">
-          <p className="text-xl">你還真是個人才啥都沒有 :D</p>
+        <div className="flex items-center justify-center flex-col">
+          <div className="bg-base-100 w-xs p-4 rounded-box text-center">
+            <p className="font-bold">尚無獎懲紀錄</p>
+            <p className="opacity-50 mb-4 text-sm">您真是個乖寶寶</p>
 
-          <div className="space-x-4">
-            <button
-              className="btn btn-success"
-              onClick={() => {
-                window.location.href =
-                  "https://youtu.be/YQZEoZ4W0ac?si=YXEI9jdM3LU0d9x1";
-              }}
-            >
-              取得嘉獎
-            </button>
-
-            <button
-              className="btn btn-error"
-              onClick={() => {
-                window.location.href = "http://203.71.221.50/army/";
-                ("");
-              }}
-            >
-              取得警告
-            </button>
-
-            <button className="btn btn-primary">主頁</button>
+            <div className="space-y-4">
+              <button
+                className="btn btn-success btn-soft w-full rounded-full"
+                onClick={() => {
+                  window.location.href =
+                    "https://youtu.be/YQZEoZ4W0ac?si=YXEI9jdM3LU0d9x1";
+                }}
+              >
+                取得嘉獎
+              </button>
+              <button
+                className="btn btn-error btn-soft w-full rounded-full"
+                onClick={() => {
+                  window.location.href = "http://203.71.221.50/army/";
+                }}
+              >
+                取得警告
+              </button>
+              <button
+                onClick={() => navigate("/home")}
+                className="btn btn-primary btn-soft w-full rounded-full"
+              >
+                Home
+              </button>
+            </div>
           </div>
         </div>
       )}
