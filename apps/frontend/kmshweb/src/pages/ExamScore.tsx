@@ -538,50 +538,62 @@ const ExamScore = () => {
     }
   };
 
-  const getSemester = async (oldSite: boolean = false) => {
-    try {
-      let response = await authedFetch(
-        `http://localhost:3000/api/student/semesters/current${
-          oldSite ? "?source=origin" : ""
-        }`
-      );
+  const getSemester = async (
+    oldSite: boolean = false,
+    signal?: { cancelled: boolean }
+  ) => {
+    const response = await authedFetch(
+      `http://localhost:3000/api/student/semesters/current${
+        oldSite ? "?source=origin" : ""
+      }`
+    );
 
-      let semester: Semester = response.data;
-      const [title, subtitle] = (response.data.name as string).split(" ");
-      semester.title = title;
-      semester.subtitle = subtitle;
+    // 如果已取消，不做任何 state 更新
+    if (signal?.cancelled) return;
 
-      setSemester(semester);
+    let semester: Semester = response.data;
+    const [title, subtitle] = (response.data.name as string).split(" ");
+    semester.title = title;
+    semester.subtitle = subtitle;
 
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("examid", response.data.exams[0]?.id ?? "");
-      setSearchParams(newParams, { replace: true });
+    setSemester(semester);
 
-      examId = response.data.exams[0]?.id ?? "";
-    } catch (error) {
-      console.error(error);
-    }
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("examid", response.data.exams[0]?.id ?? "");
+    setSearchParams(newParams, { replace: true });
+
+    examId = response.data.exams[0]?.id ?? "";
   };
 
   useEffect(() => {
+    const signal = { cancelled: false };
+
     const a = async () => {
       try {
         setNavbarButtons([]);
         setIsLoading(true);
-        await getSemester();
-        setIsLoading(false);
+
+        await getSemester(false, signal); // 正常 API
+        if (!signal.cancelled) setIsLoading(false);
 
         setIsLoadingFromOldSite(true);
-        await getSemester(true);
-        setIsLoadingFromOldSite(false);
+        await getSemester(true, signal); // 舊站 API
+        if (!signal.cancelled) setIsLoadingFromOldSite(false);
       } catch (error) {
-        setIsLoadingFromOldSite(false);
-        setIsLoading(false);
+        if (!signal.cancelled) {
+          setIsLoading(false);
+          setIsLoadingFromOldSite(false);
+        }
         console.error(error);
       }
     };
 
     a();
+
+    // clean-up: 離開頁面時標記 cancelled
+    return () => {
+      signal.cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
