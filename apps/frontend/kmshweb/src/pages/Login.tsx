@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useModal } from "../widgets/ModalContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useNavbarButtons } from "../widgets/NavbarButtonsContext";
 import type { LoginRequestBody } from "../types/auth";
 import { getClientDeviceId } from "../utils/device";
@@ -21,6 +21,7 @@ const Login = () => {
   const [trustDevice, setTrustDevice] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [searchParams] = useSearchParams();
   const { setAccessToken } = useAuth();
   const student = useStudent();
 
@@ -108,6 +109,11 @@ const Login = () => {
         setAccessToken(accessToken);
 
         localStorage.setItem("isLoggedIn", "true");
+        const redirectTo = searchParams.get("redirectTo");
+        if (redirectTo && redirectTo.startsWith("/")) {
+          navigate(redirectTo);
+          return;
+        }
 
         navigate("/home");
       } else if (action === "register") {
