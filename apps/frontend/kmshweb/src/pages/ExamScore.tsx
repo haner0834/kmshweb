@@ -21,6 +21,7 @@ import Section from "../widgets/Section";
 import SectionTitle from "../widgets/SectionTitle";
 import BackButton from "../widgets/BackButton";
 import { useAuthFetch } from "../auth/useAuthFetch";
+import PieProgress from "../widgets/PieProgress";
 
 interface ExamTabsProps {
   exams: Exam[];
@@ -478,10 +479,10 @@ const ExamScore = () => {
   const [isSheetOn, setIsSheetOn] = useState(false);
   const [displayData, setDisplayData] = useState<DisplayData>("score");
   const { authedFetch } = useAuthFetch();
-  const [isFirstFetch, setIsFirstFetch] = useState(false);
   const [exam, setExam] = useState<Exam | null>();
   const [semester, setSemester] = useState<Semester | null>();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingFromOldSite, setIsLoadingFromOldSite] = useState(false);
 
   let examId = searchParams.get("examid");
 
@@ -537,44 +538,40 @@ const ExamScore = () => {
     }
   };
 
+  const getSemester = async (oldSite: boolean = false) => {
+    let response = await authedFetch(
+      `http://localhost:3000/api/student/semesters/current${
+        oldSite ? "?source=origin" : ""
+      }`
+    );
+
+    let semester: Semester = response.data;
+    const [title, subtitle] = (response.data.name as string).split(" ");
+    semester.title = title;
+    semester.subtitle = subtitle;
+
+    setSemester(semester);
+
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("examid", response.data.exams[0]?.id ?? "");
+    setSearchParams(newParams, { replace: true });
+
+    examId = response.data.exams[0]?.id ?? "";
+  };
+
   useEffect(() => {
     const a = async () => {
       try {
-        setIsLoading(true);
         setNavbarButtons([]);
-        let response = await authedFetch(
-          "http://localhost:3000/api/student/semesters/current?includeExams?true"
-        );
-
-        if (!response.success) {
-          setIsFirstFetch(true);
-          const newResponse = await authedFetch(
-            "http://localhost:3000/api/student/semesters/current?source=origin"
-          );
-
-          if (!newResponse.success) {
-            console.error(response);
-          }
-          response = newResponse;
-        }
-
-        let semester: Semester = response.data;
-        const [title, subtitle] = (response.data.name as string).split(" ");
-        semester.title = title;
-        semester.subtitle = subtitle;
-
-        setSemester(semester);
-
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set("examid", response.data.exams[0]?.id ?? "");
-        setSearchParams(newParams, { replace: true });
-        setIsFirstFetch(false);
-
-        examId = response.data.exams[0]?.id ?? "";
-
+        setIsLoading(true);
+        await getSemester();
         setIsLoading(false);
+
+        setIsLoadingFromOldSite(true);
+        await getSemester(true);
+        setIsLoadingFromOldSite(false);
       } catch (error) {
-        setIsFirstFetch(false);
+        setIsLoadingFromOldSite(false);
         setIsLoading(false);
         console.error(error);
       }
@@ -584,6 +581,7 @@ const ExamScore = () => {
   }, []);
 
   useEffect(() => {
+    console.log("updated");
     const examId = searchParams.get("examid");
     if (!examId) return;
     const a = async () => {
@@ -603,13 +601,33 @@ const ExamScore = () => {
       }
     };
     a();
-  }, [searchParams]);
+  }, [searchParams, isLoadingFromOldSite]);
 
   useEffect(() => {
     if (!semester) return;
     const baseButtons: NavbarButton[] = ([] as NavbarButtonType[])
       .map((type) => NavbarButtonTypeMap.get(type))
       .filter(Boolean) as NavbarButton[];
+
+    if (isLoadingFromOldSite) {
+      baseButtons.push({
+        placement: "end",
+        content: (
+          <span
+            className="tooltip tooltip-bottom pt-2 pe-2"
+            data-tip="Updating..."
+          >
+            <PieProgress
+              duration={5000}
+              strokeWidth={3.6}
+              color="var(--color-primary)"
+            />
+          </span>
+        ),
+        order: 1000,
+        id: "navbar_loading",
+      });
+    }
 
     const menuToggleButton: NavbarButton = {
       placement: "end",
@@ -643,13 +661,13 @@ const ExamScore = () => {
     };
 
     setNavbarButtons([...baseButtons, menuToggleButton, backButton, title]);
-  }, [semester]);
+  }, [semester, isLoading]);
 
   return (
     <div className="w-screen flex join-vertical min-h-screen justify-start pt-18 bg-base-300">
       <ExamTabs exams={semester?.exams ?? []} />
 
-      {isFirstFetch ? (
+      {isLoadingFromOldSite && !exam ? (
         <div className="w-screen h-screen flex flex-col items-center justify-center">
           <span className="loading loading-dots loading-xl" />
 
