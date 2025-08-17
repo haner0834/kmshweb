@@ -17,10 +17,10 @@ import {
 } from "@icons";
 
 const map = {
-  learninghistory: {
+  learningportfolio: {
     icon: <FileUp className="text-blue-400 w-10 h-10" />,
     name: "學習歷程",
-    code: "LEARNING_HISTORY",
+    code: "LEARNING_PORTFOLIO",
     description:
       "將會整合上傳、壓縮等繁瑣的操作為一體，並結合AI生成心得，省下您寶貴的時間。",
   },
