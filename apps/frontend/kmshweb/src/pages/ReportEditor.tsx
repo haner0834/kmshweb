@@ -43,7 +43,7 @@ const ReportEditor = () => {
       {
         id: "1",
         title: "學習歷程",
-        code: "LEARNING_HISTORY",
+        code: "LEARNING_PORTFOLIO",
         description:
           "將會整合上傳、壓縮等繁瑣的操作為一體，並結合AI生成心得，省下您寶貴的時間。",
         isUpcoming: true,
