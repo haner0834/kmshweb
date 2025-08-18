@@ -39,10 +39,6 @@ const getDisplayDataName = (type: DisplayData) => {
   return DisplayDataMap[type];
 };
 
-const sleep = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
-
 const ExamTabs: React.FC<ExamTabsProps> = ({ exams }) => {
   const [selectedExamId, setSelectedExamId] = useState<string>("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -126,15 +122,13 @@ const SubjectsDisplay = ({
   const [categorizedSubjects, setCategorizedSubjects] = useState(
     () => new Map()
   );
-  const [searchParams] = useSearchParams();
   const { isMobile } = useDevice();
 
   // get config from localStorage
 
   useEffect(() => {
     const a = async () => {
-      // NOTE: The `sleep` here are used to prevent reading empty `subject.type`.
-      await sleep(100);
+      console.log("FUCK U BITCH REACT", subjects);
       // iterate through all subjects, categorize them
       const map = new Map<string, Subject[]>();
       for (const subject of subjects) {
@@ -147,7 +141,7 @@ const SubjectsDisplay = ({
     };
 
     a();
-  }, [searchParams]);
+  }, [subjects]);
 
   const formatDecimal = (number: number): { int: string; dec: string } => {
     const [int, dec] = number
@@ -177,7 +171,7 @@ const SubjectsDisplay = ({
                 className="ms-4 flex my-3 items-center justify-end"
               >
                 <p className={isMobile ? "w-full" : "basis-1/4"}>
-                  {subject.name}
+                  {subject?.name}
                 </p>
 
                 {(!isMobile || displayData === "ranking") && (

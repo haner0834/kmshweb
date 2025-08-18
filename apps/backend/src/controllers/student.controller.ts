@@ -315,15 +315,15 @@ export const getCurrentSemesterAndUpdateHandler: AuthHandler<SemesterWithDetails
         const semester = await studentService.getCurrentSemesterAndUpdate(sid)
         res.success(semester)
     } catch (error) {
+        logger.error({
+            service: "student-service",
+            action: "get current semester and update",
+            error: error as Error,
+            context: {
+                studentId: sid,
+            }
+        })
         if (error instanceof AppError) {
-            logger.error({
-                service: "student-service",
-                action: "get current semester and update",
-                error: error,
-                context: {
-                    studentId: sid,
-                }
-            })
             res.fail(error.code, error.message, error.statusCode)
             return
         }

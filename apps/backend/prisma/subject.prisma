@@ -15,7 +15,7 @@ model Subject {
 
 enum SubjectType {
     nationalMandatory
-    schollMandatory
+    schoolMandatory
     schoolElective
     otherElective
     unknown
