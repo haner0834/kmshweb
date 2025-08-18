@@ -1,5 +1,6 @@
 import React from "react";
 
+export const Adobe = React.lazy(() => import('@shared/icons/adobe.svg?react'));
 export const Award = React.lazy(() => import('@shared/icons/award.svg?react'));
 export const Ban = React.lazy(() => import('@shared/icons/ban.svg?react'));
 export const Blocks = React.lazy(() => import('@shared/icons/blocks.svg?react'));

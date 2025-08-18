@@ -1,0 +1,58 @@
+{
+  "檔案壓縮": [
+    {
+      "title": "Adobe",
+      "icon": "Adobe",
+      "link": "https://www.adobe.com/acrobat/online/compress-pdf.html"
+    }
+  ],
+  "上傳": [
+    {
+      "title": "全國學習歷程檔案系統",
+      "icon": "FileUp",
+      "link": "https://epf-mlife.k12ea.gov.tw/Portal.do"
+    }
+  ],
+  "其他": [
+    {
+      "title": "國立臺灣圖書館「高級中等學校自主學習資源網」",
+      "link": "https://sdl.ntl.edu.tw/sdl/"
+    },
+    {
+      "title": "臺大開放式課程",
+      "link": "http://ocw.aca.ntu.edu.tw/ntu-ocw/"
+    },
+    {
+      "title": "NTU MOOC x Coursera",
+      "link": "https://zh-tw.coursera.org/taiwan"
+    },
+    {
+      "title": "清大開放式課程",
+      "link": "http://ocw.nthu.edu.tw/ocw/index.php"
+    },
+    {
+      "title": "可汗學院",
+      "link": "https://zh.khanacademy.org/"
+    },
+    {
+      "title": "臺灣開放式課程暨教育聯盟",
+      "link": "https://www.tocec.org.tw/web/index.jsp"
+    },
+    {
+      "title": "國立陽明交通大學ewant育網平台",
+      "link": "https://www.ewant.org/?redirect=0"
+    },
+    {
+      "title": "長榮大學「智慧大數據」系列課程",
+      "link": "https://reurl.cc/GXzlZv"
+    },
+    {
+      "title": "中興大學",
+      "link": "https://recruit.nchu.edu.tw/present/Friendship/friendship08-02.aspx"
+    },
+    {
+      "title": "【新興科技】線上教學中心",
+      "link": "https://selfstudy.cc/courses/"
+    }
+  ]
+}

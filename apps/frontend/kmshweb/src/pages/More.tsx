@@ -34,7 +34,7 @@ const icons: Record<string, React.ReactNode> = {
   HeartHandshake: <HeartHandshake />,
 };
 
-const Link = ({
+export const Link = ({
   icon,
   title,
   link,

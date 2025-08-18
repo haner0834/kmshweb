@@ -21,6 +21,7 @@ import ReportListing from "./pages/ReportListing";
 import FAQ from "./pages/FAQ";
 import Sponsor from "./pages/Sponsor";
 import NewLogin from "./pages/NewLogin";
+import LearningPortfolio from "./pages/LearningPortfolio";
 
 function App() {
   useEffect(() => {
@@ -78,6 +79,15 @@ function App() {
           element={
             <ProtectedRoute>
               <More />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="learningportfolio"
+          element={
+            <ProtectedRoute>
+              <LearningPortfolio />
             </ProtectedRoute>
           }
         />

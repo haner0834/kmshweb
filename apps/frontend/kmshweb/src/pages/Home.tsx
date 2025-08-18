@@ -79,6 +79,7 @@ const CARD_ITEMS: CardProbs[] = [
     img: <FileUp className="text-blue-400" />,
     title: "學習歷程",
     path: "/learningportfolio",
+    isEnabled: true,
   },
   {
     img: <Medal className="text-pink-400" />,
