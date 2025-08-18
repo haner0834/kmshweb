@@ -542,6 +542,11 @@ const ExamScore = () => {
       }`
     );
 
+    if (!response.success) {
+      console.error("Error getting semester");
+      return;
+    }
+
     // 如果已取消，不做任何 state 更新
     if (signal?.cancelled) return;
 
