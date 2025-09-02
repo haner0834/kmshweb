@@ -326,12 +326,12 @@ const summaryItems = (exam: Exam) => [
   {
     id: "average_score_no_weighted",
     name: "平均分",
-    value: exam.totalScore,
+    value: exam.averageScore,
   },
   {
     id: "average_score_weighted",
     name: "平均分（加權）",
-    value: exam.totalScore,
+    value: exam.weightedAverageScore,
   },
   {
     id: "total_score_no_weighted",
